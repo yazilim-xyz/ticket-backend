@@ -43,4 +43,4 @@ Thumbs.db
 application-local.properties
 application-local.yml
 application-secrets.properties
-application.properties
+# application.properties
