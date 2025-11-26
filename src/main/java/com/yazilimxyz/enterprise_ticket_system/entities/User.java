@@ -7,8 +7,12 @@ import java.util.List;
 
 @Entity
 @Table(name = "users")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -19,11 +23,14 @@ public class User {
     @Column(nullable = false, unique = true, length = 100)
     private String email;
 
+    // BCrypt ile hashlenmiş şifre
     @Column(name = "password_hash", nullable = false, length = 255)
     private String passwordHash;
 
-    @Column(length = 30)
-    private String role;
+    // ENUM Role: USER, ADMIN
+    @Enumerated(EnumType.STRING)
+    @Column(length = 30, nullable = false)
+    private Role role;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

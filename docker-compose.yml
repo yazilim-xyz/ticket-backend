@@ -17,6 +17,7 @@ services:
       - db
     restart: unless-stopped
 
+
   db:
     image: postgres:16
     container_name: ticket_db
@@ -33,3 +34,6 @@ services:
 
 volumes:
     db_data:
+
+
+
