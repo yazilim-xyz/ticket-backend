@@ -6,3 +6,4 @@ public record RegisterRequestDTO(
         String password
 ) {}
 //Bu DTO, kullanıcı kayıt olurken front-end’in bize gönderdiği veri.
+//yani kullanıcının frontend’den gönderdiği veriyi taşır.

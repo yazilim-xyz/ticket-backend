@@ -30,50 +30,50 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        // Header’dan Authorization al
-        String authHeader = request.getHeader("Authorization");
+        String header = request.getHeader("Authorization");
 
-        // Bearer yoksa → token yok say, filterChain’e devam et
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (header == null || !header.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // "Bearer " kısmını at, token’ı al
-        String token = authHeader.substring(7);
+        String token = header.substring(7);//bearer yazısını atar ve tokeni okumaya başlar
+
 
         try {
-            // token’dan email ve role çıkar
-            String email = jwtUtil.extractEmail(token);
-            String role = jwtUtil.extractRole(token);
+            Long userId = jwtUtil.extractUserId(token);//tokena bakıp kullanıcı id si okunur
+            String role = jwtUtil.extractRole(token);//adminin rolü okunur
+            if (jwtUtil.isTokenExpired(token)) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Token expired");
+                return;  // ← Filter zincirini kır
+            }
 
-            // Zaten authenticated ise yeniden set etme
-            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                // Rolü Spring Security formatına çevir: "ROLE_ADMIN" / "ROLE_USER"
-                SimpleGrantedAuthority authority =
+                SimpleGrantedAuthority authority =//kişinin rolü alınır
                         new SimpleGrantedAuthority("ROLE_" + role);
 
-                UsernamePasswordAuthenticationToken authToken =
+                UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
-                                email, // principal (şimdilik sadece email)
+                                userId,    // ★ principal = USER ID
                                 null,
                                 List.of(authority)
                         );
 
-                authToken.setDetails(
+                authentication.setDetails(
                         new WebAuthenticationDetailsSource().buildDetails(request)
                 );
 
-                // Security context’e auth bilgisini koy
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
             }
+
         } catch (Exception e) {
-            // Token patlarsa → SecurityContext temiz kalır, istek reddedilebilir
-            System.out.println("JWT error: " + e.getMessage());
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Invalid token: " + e.getMessage());
+            return;  // ← İsteği burada durdur
         }
 
-        // Devam et
         filterChain.doFilter(request, response);
     }
 }

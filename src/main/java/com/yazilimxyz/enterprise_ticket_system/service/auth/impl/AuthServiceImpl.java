@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
-
+//Burada gerçek iş yapılır:
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
@@ -23,7 +23,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public RegisterResponseDTO register(RegisterRequestDTO request) {
 
-        // 1) Email zaten var mı?
+        // 1) Email zaten var mı kontrolü yapılır
         if (userRepository.existsByEmail(request.email())) {
             throw new RuntimeException("Email already in use!");
         }
@@ -49,7 +49,7 @@ public class AuthServiceImpl implements AuthService {
         );
     }
 
-    @Override
+   @Override
     public LoginResponseDTO login(LoginRequestDTO request) {
 
         // 1) Kullanıcı var mı?
@@ -62,11 +62,11 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // 3) JWT TOKEN ÜRET (GERÇEK TOKEN)
-        String token = jwtUtil.generateToken(
-                user.getEmail(),
-                user.getRole().name()
-        );
-
+       String token = jwtUtil.generateToken(
+               user.getId(),           // ← userId
+               user.getEmail(),        // ← email
+               user.getRole().name()   // ← role
+       );
         // 4) DTO dön
         return new LoginResponseDTO(
                 user.getId(),

@@ -8,3 +8,4 @@ public record RegisterResponseDTO(
         String email,
         Role role
 ) {}
+//Backend’in register işleminden sonra frontend’e gönderdiği veri.

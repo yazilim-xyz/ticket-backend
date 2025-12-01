@@ -33,11 +33,13 @@ public class User {
     private Role role;
 
     @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt;//Kullanıcı ne zaman oluşturuldu
 
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private LocalDateTime updatedAt;//kullanıcı ne zaman güncellendi
 
+
+    //Bu alt kısımdakiler ticket/chat ekibinin kısımı
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private UserPreference preference;
 

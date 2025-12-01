@@ -1,9 +1,9 @@
 package com.yazilimxyz.enterprise_ticket_system.controller.auth;
 
-import com.yazilimxyz.enterprise_ticket_system.dto.auth.RegisterRequestDTO;
-import com.yazilimxyz.enterprise_ticket_system.dto.auth.RegisterResponseDTO;
+import com.yazilimxyz.enterprise_ticket_system.dto.auth.*;
 import com.yazilimxyz.enterprise_ticket_system.service.auth.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -13,8 +13,17 @@ public class AuthController {
 
     private final AuthService authService;
 
+    // REGISTER
     @PostMapping("/register")
-    public RegisterResponseDTO register(@RequestBody RegisterRequestDTO dto) {
-        return authService.register(dto);
+    public ResponseEntity<RegisterResponseDTO> register(@RequestBody RegisterRequestDTO dto) {
+        RegisterResponseDTO response = authService.register(dto);
+        return ResponseEntity.ok(response);
+    }
+
+    // LOGIN
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO dto) {
+        LoginResponseDTO response = authService.login(dto);
+        return ResponseEntity.ok(response);
     }
 }
