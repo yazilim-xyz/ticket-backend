@@ -1,5 +1,9 @@
 package com.yazilimxyz.enterprise_ticket_system.security;
 
+import com.yazilimxyz.enterprise_ticket_system.entities.User;
+import com.yazilimxyz.enterprise_ticket_system.repository.UserRepository;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,9 +22,11 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
 
-    public JwtAuthenticationFilter(JwtUtil jwtUtil) {
+    public JwtAuthenticationFilter(JwtUtil jwtUtil, UserRepository userRepository) {
         this.jwtUtil = jwtUtil;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -37,26 +43,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        String token = header.substring(7);//bearer yazısını atar ve tokeni okumaya başlar
-
+        String token = header.substring(7);
 
         try {
-            Long userId = jwtUtil.extractUserId(token);//tokena bakıp kullanıcı id si okunur
-            String role = jwtUtil.extractRole(token);//adminin rolü okunur
-            if (jwtUtil.isTokenExpired(token)) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Token expired");
-                return;  // ← Filter zincirini kır
-            }
+            Claims claims = jwtUtil.parseClaims(token); // single parse; throws if invalid/expired
+            Long userId = Long.valueOf(claims.getSubject());
 
             if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                SimpleGrantedAuthority authority =//kişinin rolü alınır
-                        new SimpleGrantedAuthority("ROLE_" + role);
+                User user = userRepository.findById(userId)
+                        .orElseThrow(() -> new RuntimeException("User not found"));
+
+                if (!user.isActive()) {
+                    throw new RuntimeException("Account disabled");
+                }
+
+                SimpleGrantedAuthority authority =
+                        new SimpleGrantedAuthority("ROLE_" + user.getRole().name());
 
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
-                                userId,    // ★ principal = USER ID
+                                user,    // principal = full User
                                 null,
                                 List.of(authority)
                         );
@@ -68,10 +75,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
 
+        } catch (ExpiredJwtException e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Token expired");
+            return;
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("Invalid token: " + e.getMessage());
-            return;  // ← İsteği burada durdur
+            return;
         }
 
         filterChain.doFilter(request, response);

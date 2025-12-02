@@ -23,7 +23,7 @@ public class User {
     @Column(nullable = false, unique = true, length = 100)
     private String email;
 
-    // BCrypt ile hashlenmiş şifre
+    // BCrypt hashed password
     @Column(name = "password_hash", nullable = false, length = 255)
     private String passwordHash;
 
@@ -33,13 +33,15 @@ public class User {
     private Role role;
 
     @Column(name = "created_at")
-    private LocalDateTime createdAt;//Kullanıcı ne zaman oluşturuldu
+    private LocalDateTime createdAt; // user creation time
 
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;//kullanıcı ne zaman güncellendi
+    private LocalDateTime updatedAt; // last update time
 
+    @Column(name = "is_active", nullable = false)
+    private boolean active = true; // account status flag (disable/login block)
 
-    //Bu alt kısımdakiler ticket/chat ekibinin kısımı
+    // Ticket/chat relationships
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private UserPreference preference;
 

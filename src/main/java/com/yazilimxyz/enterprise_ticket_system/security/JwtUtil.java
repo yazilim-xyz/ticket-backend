@@ -2,61 +2,77 @@ package com.yazilimxyz.enterprise_ticket_system.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.util.Date;
+import java.util.UUID;
 
 @Component
 public class JwtUtil {
 
-    // Güvenli bir SECRET KEY (64+ karakter)
-    private static final String SECRET_KEY =
-            "dg7Y3hs92Kdj29Ds8sS11aaPplxo18GHs0PlqmGm392MxqAA0dkLm1Pz55Hs82jd";
+    private final Key key;
+    private final long expirationMs;
+    private final String issuer;
+    private final String audience;
 
-    // 1 saat (ms)
-    private static final long EXPIRATION = 60 * 60 * 1000;
+    public JwtUtil(
+            @Value("${jwt.secret}") String secret,
+            @Value("${jwt.expiration-ms:3600000}") long expirationMs,
+            @Value("${jwt.issuer:enterprise-ticket-system}") String issuer,
+            @Value("${jwt.audience:enterprise-ticket-system-client}") String audience
+    ) {
+        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        this.expirationMs = expirationMs;
+        this.issuer = issuer;
+        this.audience = audience;
+    }
 
-    // TOKEN ÜRET
     public String generateToken(Long userId, String email, String role) {
+        Date now = new Date();
+        Date exp = new Date(now.getTime() + expirationMs);
 
         return Jwts.builder()
-                .setSubject(String.valueOf(userId))     // ★ sub = userId
+                .setId(UUID.randomUUID().toString())
+                .setSubject(String.valueOf(userId))
+                .setIssuer(issuer)
+                .setAudience(audience)
                 .claim("email", email)
                 .claim("role", role)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
-                .signWith(Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8)))
+                .setIssuedAt(now)
+                .setExpiration(exp)
+                .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    // CLAIMS AL
-    private Claims getAllClaims(String token) {
+    public Claims parseClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(SECRET_KEY.getBytes(StandardCharsets.UTF_8))
+                .setSigningKey(key)
+                .requireAudience(audience)
+                .requireIssuer(issuer)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
     }
 
-    // USER ID (SUB) ÇEK
     public Long extractUserId(String token) {
-        return Long.valueOf(getAllClaims(token).getSubject());
+        return Long.valueOf(parseClaims(token).getSubject());
     }
 
-    // EMAIL ÇEK
     public String extractEmail(String token) {
-        return getAllClaims(token).get("email", String.class);
+        return parseClaims(token).get("email", String.class);
     }
 
-    // ROLE ÇEK
     public String extractRole(String token) {
-        return getAllClaims(token).get("role", String.class);
+        return parseClaims(token).get("role", String.class);
     }
 
     public boolean isTokenExpired(String token) {
-        return getAllClaims(token).getExpiration().before(new Date());
+        return parseClaims(token).getExpiration().before(new Date());
     }
 
     public boolean isTokenValid(String token, Long userId) {

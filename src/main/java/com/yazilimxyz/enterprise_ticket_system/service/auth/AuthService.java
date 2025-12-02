@@ -7,5 +7,9 @@ public interface AuthService {
     RegisterResponseDTO register(RegisterRequestDTO request);
 
     LoginResponseDTO login(LoginRequestDTO request);
+
+    LoginResponseDTO refreshToken(RefreshTokenRequestDTO request);
+
+    void logout(Long userId);
 }
 
