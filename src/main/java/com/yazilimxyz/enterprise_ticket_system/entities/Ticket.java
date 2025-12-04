@@ -119,7 +119,7 @@ public class Ticket {
     }
 
     public void setCreatedBy(User createdBy) {
-        this.createdBy = createdBy;
+        this.createdBy = createdBy;//deneme
     }
 
     public User getAssignedTo() {
