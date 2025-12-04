@@ -1,7 +1,6 @@
 package com.example.ticketapp.ticket;
 
 import com.example.ticketapp.user.User;
-import com.example.ticketapp.user.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

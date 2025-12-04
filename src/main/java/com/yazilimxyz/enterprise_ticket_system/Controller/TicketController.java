@@ -15,38 +15,35 @@ public class TicketController {
         this.ticketService = ticketService;
     }
 
-    // --- 1) Ticket Oluşturma ---
+    //olusturma
     @PostMapping
     public ResponseEntity<Ticket> createTicket(@RequestBody TicketCreateRequest request) {
         Ticket created = ticketService.createTicket(request);
         return ResponseEntity.ok(created);
     }
 
-    // --- 2) Ticket Atama ---
+    //atama
     @PatchMapping("/{id}/assign")
-    public ResponseEntity<Ticket> assignTicket(@PathVariable Long id,
-                                               @RequestBody TicketAssignRequest request) {
+    public ResponseEntity<Ticket> assignTicket(@PathVariable Long id, @RequestBody TicketAssignRequest request) {
         Ticket updated = ticketService.assignTicket(id, request);
         return ResponseEntity.ok(updated);
     }
 
-    // --- 3) Durum Güncelleme ---
+    // durum degistirme
     @PatchMapping("/{id}/status")
-    public ResponseEntity<Ticket> updateStatus(@PathVariable Long id,
-                                               @RequestBody TicketStatusUpdateRequest request) {
+    public ResponseEntity<Ticket> updateStatus(@PathVariable Long id,@RequestBody TicketStatusUpdateRequest request) {
         Ticket updated = ticketService.updateStatus(id, request);
         return ResponseEntity.ok(updated);
     }
 
-    // --- 4) Yorum Ekleme ---
+    // comment kısmı
     @PostMapping("/{id}/comments")
-    public ResponseEntity<TicketComment> addComment(@PathVariable Long id,
-                                                    @RequestBody TicketCommentCreateRequest request) {
+    public ResponseEntity<TicketComment> addComment(@PathVariable Long id,@RequestBody TicketCommentCreateRequest request) {
         TicketComment comment = ticketService.addComment(id, request);
         return ResponseEntity.ok(comment);
     }
 
-    // --- 5) Ticket'ın yorumlarını listeleme ---
+    // yorumları gösterme
     @GetMapping("/{id}/comments")
     public ResponseEntity<List<TicketComment>> getComments(@PathVariable Long id) {
         List<TicketComment> comments = ticketService.getComments(id);
