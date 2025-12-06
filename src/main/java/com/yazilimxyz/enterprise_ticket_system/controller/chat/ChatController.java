@@ -1,0 +1,66 @@
+package com.yazilimxyz.enterprise_ticket_system.controller.chat;
+
+import java.security.Principal;
+import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.user.SimpUserRegistry;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
+import com.yazilimxyz.enterprise_ticket_system.dto.chat.MessageDto;
+import com.yazilimxyz.enterprise_ticket_system.entities.InternalChat;
+import com.yazilimxyz.enterprise_ticket_system.entities.User;
+import com.yazilimxyz.enterprise_ticket_system.repository.MessageRepository;
+
+@Controller
+public class ChatController {
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    private MessageRepository messageRepository;
+
+    @Autowired
+    private SimpUserRegistry simpUserRegistry;
+
+    @MessageMapping("/chat")
+    public void processMessage(@Payload MessageDto messageDto, Principal principal) {
+
+        InternalChat chatMessage = new InternalChat();
+        long senderId = Long.parseLong(principal.getName());
+
+        // TODO receiverid ile receiver dbde var mı check
+
+        User sender = new User();
+        sender.setId(senderId);
+        chatMessage.setSender(sender);
+        User receiver = new User();
+        receiver.setId(messageDto.receiverId());
+        chatMessage.setReceiver(receiver);
+        chatMessage.setMessage(messageDto.message());
+        chatMessage.setCreatedAt(LocalDateTime.now());
+
+        // save to db
+        messageRepository.save(chatMessage);
+
+        // Send the message to the receiver if they are connected
+        messagingTemplate.convertAndSendToUser(messageDto.receiverId().toString(), "/queue/messages", chatMessage);
+    }
+
+    @GetMapping("api/messages/{otherUserId}")
+    public ResponseEntity<List<InternalChat>> getChatHistory(@PathVariable Long otherUserId, Principal principal) {
+        long userId = Long.parseLong(principal.getName());
+
+        List<InternalChat> messages = messageRepository.findBySenderAndReceiver(userId, otherUserId);
+        messages.sort(Comparator.comparing(InternalChat::getCreatedAt));
+        return ResponseEntity.ok(messages);
+    }
+}

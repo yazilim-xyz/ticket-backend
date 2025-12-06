@@ -24,8 +24,7 @@ public class JwtUtil {
             @Value("${jwt.secret}") String secret,
             @Value("${jwt.expiration-ms:3600000}") long expirationMs,
             @Value("${jwt.issuer:enterprise-ticket-system}") String issuer,
-            @Value("${jwt.audience:enterprise-ticket-system-client}") String audience
-    ) {
+            @Value("${jwt.audience:enterprise-ticket-system-client}") String audience) {
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.expirationMs = expirationMs;
         this.issuer = issuer;
@@ -36,6 +35,10 @@ public class JwtUtil {
         Date now = new Date();
         Date exp = new Date(now.getTime() + expirationMs);
 
+        // TODO burada neden random uuid kullanılıyor?? userId kullanılması daha
+        // mantıklı değil mi? userIdyi guid kullanacak şekilde ayarlayıp onu kullanırız.
+        // o halde her yerde id için subjecti çekiyorduk onların da değiştirilmesi lazım
+        // id nin kullanılması lazım.
         return Jwts.builder()
                 .setId(UUID.randomUUID().toString())
                 .setSubject(String.valueOf(userId))

@@ -26,6 +26,8 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
+    // TODO application propertiesten falan alınır ki front kısmının ipsine göre
+    // ayarlamak lazım zaten
     @Value("${cors.allowed-origins:http://localhost:3000}")
     private String corsAllowedOrigins;
 
@@ -42,9 +44,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 // JWT = STATELESS
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 // Yetki kuralları
                 .authorizeHttpRequests(auth -> auth
@@ -58,8 +58,7 @@ public class SecurityConfig {
                         .requestMatchers("/user/**").hasRole("USER")
 
                         // Diğer tüm endpointler → JWT zorunlu
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
 
                 // JWT filtresini ekle
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
