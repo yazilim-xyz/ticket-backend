@@ -55,6 +55,7 @@ public class ChatController {
         messagingTemplate.convertAndSendToUser(messageDto.receiverId().toString(), "/queue/messages", chatMessage);
     }
 
+    // TODO burada bir hata var alamıyorum 500 internal server veriyor
     @GetMapping("api/messages/{otherUserId}")
     public ResponseEntity<List<InternalChat>> getChatHistory(@PathVariable Long otherUserId, Principal principal) {
         long userId = Long.parseLong(principal.getName());

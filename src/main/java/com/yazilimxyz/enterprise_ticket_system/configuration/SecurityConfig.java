@@ -50,7 +50,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
 
                         // Herkese açık endpointler
-                        .requestMatchers("/auth/register", "/auth/login", "/auth/refresh", "/public/**").permitAll()
+                        .requestMatchers("/auth/register", "/auth/login", "/auth/refresh", "/public/**",
+                                "/chat-test.html",
+                                // WebSocket/SockJS handshake ve yardımcı endpointleri serbest bırak
+                                "/ws", "/ws/**")
+                        // TODO buraların değişmesi lazım sanırım direkt izin vermeyelim herkese? ?? ???
+                        .permitAll()
                         .requestMatchers("/auth/logout").authenticated()
 
                         // Rol bazlı yetkiler
