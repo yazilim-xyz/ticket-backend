@@ -59,7 +59,8 @@ public class ChatController {
     public ResponseEntity<List<InternalChat>> getChatHistory(@PathVariable Long otherUserId, Principal principal) {
         long userId = Long.parseLong(principal.getName());
 
-        List<InternalChat> messages = messageRepository.findBySenderAndReceiver(userId, otherUserId);
+        List<InternalChat> messages = messageRepository.findBySender_IdAndReceiver_IdOrSender_IdAndReceiver_Id(userId,
+                otherUserId, otherUserId, userId);
         messages.sort(Comparator.comparing(InternalChat::getCreatedAt));
         return ResponseEntity.ok(messages);
     }
