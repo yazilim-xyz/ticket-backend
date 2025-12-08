@@ -78,7 +78,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                             // Spring'in "SimpUserRegistry"si bu bilgiyi kullanarak "ali ->
                             // SessionID:xyz-123" eşleşmesini yapar.
                             // convertAndSendToUser metodu çalışırken bu eşleşmeye bakar.
-                            UsernamePasswordAuthenticationToken user = new UsernamePasswordAuthenticationToken(userId,
+                            UsernamePasswordAuthenticationToken user = new UsernamePasswordAuthenticationToken(
+                                    userId.toString(),
                                     null, List.of());
                             accessor.setUser(user);
                         }
