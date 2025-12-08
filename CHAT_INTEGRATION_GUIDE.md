@@ -113,23 +113,15 @@ const sendMessage = (stompClient, receiverId, messageText) => {
 
 ## 📥 Mesaj Alma
 
-WebSocket üzerinden gelen mesajlar şu formatta gelir:
+WebSocket üzerinden gelen mesajlar **DTO formatında** gelir (REST API ile aynı format):
 
 ```typescript
-interface IncomingMessage {
+interface ChatMessageResponseDto {
   id: number;
-  sender: {
-    id: number;
-    fullName: string;
-    email: string;
-    role: string;
-  };
-  receiver: {
-    id: number;
-    fullName: string;
-    email: string;
-    role: string;
-  };
+  senderId: number;
+  senderName: string;
+  receiverId: number;
+  receiverName: string;
   message: string;
   createdAt: string; // ISO 8601 format
 }
@@ -140,6 +132,9 @@ interface IncomingMessage {
 ```javascript
 stompClient.subscribe('/user/queue/messages', (message) => {
   const chatMessage = JSON.parse(message.body);
+  
+  // chatMessage artık DTO formatında
+  console.log(`${chatMessage.senderName}: ${chatMessage.message}`);
   
   // Mesajı state'e ekle veya UI'da göster
   handleNewMessage(chatMessage);
@@ -270,10 +265,13 @@ const useChat = (jwtToken) => {
 
     stompClient.current.send('/app/chat', {}, JSON.stringify(messageDto));
 
-    // Gönderilen mesajı hemen UI'da göster
+    // Gönderilen mesajı hemen UI'da göster (DTO formatında)
     const sentMessage = {
-      sender: { id: currentUserId.current },
-      receiver: { id: receiverId },
+      id: null,
+      senderId: currentUserId.current,
+      senderName: 'You',
+      receiverId: receiverId,
+      receiverName: 'User ' + receiverId,
       message: messageText,
       createdAt: new Date().toISOString()
     };
@@ -293,16 +291,8 @@ const useChat = (jwtToken) => {
       );
       const history = await response.json();
       
-      // DTO formatını entity formatına çevir (tutarlılık için)
-      const formattedHistory = history.map(msg => ({
-        id: msg.id,
-        sender: { id: msg.senderId, fullName: msg.senderName },
-        receiver: { id: msg.receiverId, fullName: msg.receiverName },
-        message: msg.message,
-        createdAt: msg.createdAt
-      }));
-      
-      setMessages(formattedHistory);
+      // DTO formatı direkt kullan (WebSocket ile aynı format)
+      setMessages(history);
     } catch (error) {
       console.error('Chat geçmişi yüklenirken hata:', error);
     }
@@ -360,10 +350,10 @@ const ChatComponent = ({ jwtToken }) => {
           <div
             key={index}
             style={{
-              textAlign: msg.sender.id == currentUserId ? 'right' : 'left'
+              textAlign: msg.senderId == currentUserId ? 'right' : 'left'
             }}
           >
-            <strong>{msg.sender.id == currentUserId ? 'You' : msg.sender.fullName}:</strong>
+            <strong>{msg.senderId == currentUserId ? 'You' : msg.senderName}:</strong>
             <p>{msg.message}</p>
             <small>{new Date(msg.createdAt).toLocaleTimeString()}</small>
           </div>
@@ -392,9 +382,7 @@ export default ChatComponent;
 
 2. **User ID**: JWT token'ın `sub` claim'inde user ID bulunur.
 
-3. **Mesaj Formatları**:
-   - **WebSocket mesajları**: Entity formatında (nested objeler)
-   - **REST API response**: DTO formatında (flat yapı)
+3. **Mesaj Formatı**: Hem WebSocket hem REST API **aynı DTO formatını** kullanır (`ChatMessageResponseDto`). Bu tutarlılık frontend kodunu basitleştirir.
 
 4. **Bağlantı Yönetimi**: Component unmount olduğunda WebSocket bağlantısını kapatmayı unutmayın.
 

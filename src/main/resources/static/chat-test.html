@@ -299,7 +299,7 @@
                     if (messages.length === 0) {
                         container.innerHTML = '<p style="text-align: center; color: #999;">No message history with this user.</p>';
                     } else {
-                        messages.forEach(msg => displayMessage(msg, true)); // API response (DTO format)
+                        messages.forEach(msg => displayMessage(msg));
                     }
                 })
                 .catch(error => {
@@ -329,67 +329,54 @@
 
             stompClient.send('/app/chat', {}, JSON.stringify(messageDto));
 
-            // Display sent message immediately (entity-like format for consistency)
+            // Display sent message immediately (DTO format)
             displayMessage({
-                sender: { id: parseInt(currentUserId) },
-                receiver: { id: parseInt(selectedUserId) },
+                id: null,
+                senderId: parseInt(currentUserId),
+                senderName: 'You',
+                receiverId: parseInt(selectedUserId),
+                receiverName: 'User ' + selectedUserId,
                 message: messageText,
                 createdAt: new Date().toISOString()
-            }, false); // Entity format
+            });
 
             messageInput.value = '';
         }
 
         function handleIncomingMessage(chatMessage) {
-            // WebSocket'ten gelen mesaj hala entity formatında (sender/receiver objeler)
-            const senderId = chatMessage.sender.id;
+            // WebSocket'ten gelen mesaj artık DTO formatında
+            const senderId = chatMessage.senderId;
 
             if (selectedUserId && senderId == selectedUserId) {
                 // Message from current chat partner - display it
-                displayMessage(chatMessage, false); // WebSocket message (entity format)
+                displayMessage(chatMessage);
             } else {
                 // Message from someone else - show alert
-                alert(`📩 New message from User ${senderId}: ${chatMessage.message}`);
+                alert(`📩 New message from ${chatMessage.senderName} (ID: ${senderId}): ${chatMessage.message}`);
             }
         }
 
-        function displayMessage(msg, isDto = true) {
+        function displayMessage(msg) {
             const container = document.getElementById('messagesContainer');
             const messageDiv = document.createElement('div');
 
-            // DTO format mı Entity format mı kontrol et
-            let senderId, messageText, createdAt;
-
-            if (isDto) {
-                // DTO format (API response)
-                senderId = msg.senderId;
-                messageText = msg.message;
-                createdAt = msg.createdAt;
-            } else {
-                // Entity format (WebSocket message)
-                senderId = msg.sender.id;
-                messageText = msg.message;
-                createdAt = msg.createdAt;
-            }
-
-            const isSent = senderId == currentUserId;
+            // DTO format (hem API hem WebSocket aynı format)
+            const isSent = msg.senderId == currentUserId;
             messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
 
-            const time = new Date(createdAt).toLocaleTimeString('tr-TR', {
+            const time = new Date(msg.createdAt).toLocaleTimeString('tr-TR', {
                 hour: '2-digit',
                 minute: '2-digit'
             });
 
             messageDiv.innerHTML = `
-                <div>${messageText}</div>
+                <div>${msg.message}</div>
                 <div class="message-meta">${time}</div>
             `;
 
             container.appendChild(messageDiv);
             container.scrollTop = container.scrollHeight;
-        }
-
-        function handleKeyPress(event) {
+        } function handleKeyPress(event) {
             if (event.key === 'Enter') {
                 sendMessage();
             }

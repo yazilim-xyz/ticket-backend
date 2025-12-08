@@ -44,22 +44,35 @@ public class ChatController {
         InternalChat chatMessage = new InternalChat();
         long senderId = Long.parseLong(principal.getName());
 
-        // TODO receiverid ile receiver dbde var mı check
+        // Fetch sender and receiver from database
+        User sender = userRepository.findById(senderId)
+                .orElseThrow(() -> new RuntimeException("Sender not found"));
+        User receiver = userRepository.findById(messageDto.receiverId())
+                .orElseThrow(() -> new RuntimeException("Receiver not found"));
 
-        User sender = new User();
-        sender.setId(senderId);
         chatMessage.setSender(sender);
-        User receiver = new User();
-        receiver.setId(messageDto.receiverId());
         chatMessage.setReceiver(receiver);
         chatMessage.setMessage(messageDto.message());
         chatMessage.setCreatedAt(LocalDateTime.now());
 
-        // save to db
-        messageRepository.save(chatMessage);
+        // Save to database
+        InternalChat savedMessage = messageRepository.save(chatMessage);
 
-        // Send the message to the receiver if they are connected
-        messagingTemplate.convertAndSendToUser(messageDto.receiverId().toString(), "/queue/messages", chatMessage);
+        // Convert to DTO for WebSocket response
+        ChatMessageResponseDto responseDto = new ChatMessageResponseDto(
+                savedMessage.getId(),
+                sender.getId(),
+                sender.getFullName(),
+                receiver.getId(),
+                receiver.getFullName(),
+                savedMessage.getMessage(),
+                savedMessage.getCreatedAt());
+
+        // Send DTO to the receiver if they are connected
+        messagingTemplate.convertAndSendToUser(
+                messageDto.receiverId().toString(),
+                "/queue/messages",
+                responseDto);
     }
 
     @GetMapping("api/messages/{otherUserId}")
