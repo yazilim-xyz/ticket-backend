@@ -299,7 +299,7 @@
                     if (messages.length === 0) {
                         container.innerHTML = '<p style="text-align: center; color: #999;">No message history with this user.</p>';
                     } else {
-                        messages.forEach(msg => displayMessage(msg));
+                        messages.forEach(msg => displayMessage(msg, true)); // API response (DTO format)
                     }
                 })
                 .catch(error => {
@@ -329,43 +329,59 @@
 
             stompClient.send('/app/chat', {}, JSON.stringify(messageDto));
 
-            // Display sent message immediately
+            // Display sent message immediately (entity-like format for consistency)
             displayMessage({
                 sender: { id: parseInt(currentUserId) },
                 receiver: { id: parseInt(selectedUserId) },
                 message: messageText,
                 createdAt: new Date().toISOString()
-            });
+            }, false); // Entity format
 
             messageInput.value = '';
         }
 
         function handleIncomingMessage(chatMessage) {
+            // WebSocket'ten gelen mesaj hala entity formatında (sender/receiver objeler)
             const senderId = chatMessage.sender.id;
 
             if (selectedUserId && senderId == selectedUserId) {
                 // Message from current chat partner - display it
-                displayMessage(chatMessage);
+                displayMessage(chatMessage, false); // WebSocket message (entity format)
             } else {
                 // Message from someone else - show alert
                 alert(`📩 New message from User ${senderId}: ${chatMessage.message}`);
             }
         }
 
-        function displayMessage(msg) {
+        function displayMessage(msg, isDto = true) {
             const container = document.getElementById('messagesContainer');
             const messageDiv = document.createElement('div');
 
-            const isSent = msg.sender.id == currentUserId;
+            // DTO format mı Entity format mı kontrol et
+            let senderId, messageText, createdAt;
+
+            if (isDto) {
+                // DTO format (API response)
+                senderId = msg.senderId;
+                messageText = msg.message;
+                createdAt = msg.createdAt;
+            } else {
+                // Entity format (WebSocket message)
+                senderId = msg.sender.id;
+                messageText = msg.message;
+                createdAt = msg.createdAt;
+            }
+
+            const isSent = senderId == currentUserId;
             messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
 
-            const time = new Date(msg.createdAt).toLocaleTimeString('tr-TR', {
+            const time = new Date(createdAt).toLocaleTimeString('tr-TR', {
                 hour: '2-digit',
                 minute: '2-digit'
             });
 
             messageDiv.innerHTML = `
-                <div>${msg.message}</div>
+                <div>${messageText}</div>
                 <div class="message-meta">${time}</div>
             `;
 

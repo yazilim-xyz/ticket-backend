@@ -15,10 +15,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import com.yazilimxyz.enterprise_ticket_system.dto.chat.ChatMessageResponseDto;
 import com.yazilimxyz.enterprise_ticket_system.dto.chat.MessageDto;
 import com.yazilimxyz.enterprise_ticket_system.entities.InternalChat;
 import com.yazilimxyz.enterprise_ticket_system.entities.User;
 import com.yazilimxyz.enterprise_ticket_system.repository.MessageRepository;
+import com.yazilimxyz.enterprise_ticket_system.repository.UserRepository;
+
+import java.util.stream.Collectors;
 
 @Controller
 public class ChatController {
@@ -27,6 +31,9 @@ public class ChatController {
 
     @Autowired
     private MessageRepository messageRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private SimpUserRegistry simpUserRegistry;
@@ -55,14 +62,26 @@ public class ChatController {
         messagingTemplate.convertAndSendToUser(messageDto.receiverId().toString(), "/queue/messages", chatMessage);
     }
 
-    // TODO burada bir hata var alamıyorum 500 internal server veriyor
     @GetMapping("api/messages/{otherUserId}")
-    public ResponseEntity<List<InternalChat>> getChatHistory(@PathVariable Long otherUserId, Principal principal) {
+    public ResponseEntity<List<ChatMessageResponseDto>> getChatHistory(@PathVariable Long otherUserId,
+            Principal principal) {
         long userId = Long.parseLong(principal.getName());
 
         List<InternalChat> messages = messageRepository.findBySender_IdAndReceiver_IdOrSender_IdAndReceiver_Id(userId,
                 otherUserId, otherUserId, userId);
         messages.sort(Comparator.comparing(InternalChat::getCreatedAt));
-        return ResponseEntity.ok(messages);
+
+        List<ChatMessageResponseDto> responseDtos = messages.stream()
+                .map(msg -> new ChatMessageResponseDto(
+                        msg.getId(),
+                        msg.getSender().getId(),
+                        msg.getSender().getFullName(),
+                        msg.getReceiver().getId(),
+                        msg.getReceiver().getFullName(),
+                        msg.getMessage(),
+                        msg.getCreatedAt()))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(responseDtos);
     }
 }
