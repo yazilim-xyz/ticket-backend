@@ -54,7 +54,7 @@ public class SecurityConfig {
                                 "/chat-test.html",
                                 // WebSocket/SockJS handshake ve yardımcı endpointleri serbest bırak
                                 "/ws", "/ws/**")
-                        // TODO buraların değişmesi lazım sanırım direkt izin vermeyelim herkese? ?? ???
+                        // TODO şu üst kısmın değişmesi lazım chat-test.html zaten productionda olmayacak. ws ws/** kısımları da herkese açık olmayacak sanırım. 
                         .permitAll()
                         .requestMatchers("/auth/logout").authenticated()
 
