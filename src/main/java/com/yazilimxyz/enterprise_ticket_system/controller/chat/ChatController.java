@@ -38,6 +38,9 @@ public class ChatController {
     @Autowired
     private SimpUserRegistry simpUserRegistry;
 
+    // TODO kullanıcılar elle user id girmeyecek onun yerine çalışanları listeleyen bir endpoint lazım. getallusers gibi. 
+    // oradan seçtiğine mesaj gidecek ve oradan seçtiğiyle olan geçmiş mesajları görecek. elle id girilemeyeceğinden böyle olması lazım
+
     @MessageMapping("/chat")
     public void processMessage(@Payload MessageDto messageDto, Principal principal) {
 
