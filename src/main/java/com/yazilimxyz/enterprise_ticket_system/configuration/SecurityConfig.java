@@ -26,6 +26,8 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
+    // TODO application propertiesten falan alınır ki front kısmının ipsine göre
+    // ayarlamak lazım zaten
     @Value("${cors.allowed-origins:http://localhost:3000}")
     private String corsAllowedOrigins;
 
@@ -42,15 +44,18 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 // JWT = STATELESS
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 // Yetki kuralları
                 .authorizeHttpRequests(auth -> auth
 
                         // Herkese açık endpointler
-                        .requestMatchers("/auth/register", "/auth/login", "/auth/refresh", "/public/**").permitAll()
+                        .requestMatchers("/auth/register", "/auth/login", "/auth/refresh", "/public/**",
+                                "/chat-test.html",
+                                // WebSocket/SockJS handshake ve yardımcı endpointleri serbest bırak
+                                "/ws", "/ws/**")
+                        // TODO buraların değişmesi lazım sanırım direkt izin vermeyelim herkese? ?? ???
+                        .permitAll()
                         .requestMatchers("/auth/logout").authenticated()
 
                         // Rol bazlı yetkiler
@@ -58,8 +63,7 @@ public class SecurityConfig {
                         .requestMatchers("/user/**").hasRole("USER")
 
                         // Diğer tüm endpointler → JWT zorunlu
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
 
                 // JWT filtresini ekle
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
