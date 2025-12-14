@@ -1,4 +1,6 @@
-package com.example.ticketapp.ticket;
+package com.yazilimxyz.enterprise_ticket_system.DTO;
+
+import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketStatus;
 
 public class TicketStatusUpdateRequest {
 

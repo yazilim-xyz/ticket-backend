@@ -1,6 +1,18 @@
-package com.example.ticketapp.ticket;
+package com.yazilimxyz.enterprise_ticket_system.Services;
 
-import com.example.ticketapp.user.User;
+import com.yazilimxyz.enterprise_ticket_system.entities.Ticket;
+import com.yazilimxyz.enterprise_ticket_system.entities.TicketComment;
+import com.yazilimxyz.enterprise_ticket_system.entities.User;
+import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketPriority;
+import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketStatus;
+import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketCategory;
+import com.yazilimxyz.enterprise_ticket_system.DTO.TicketCreateRequest;
+import com.yazilimxyz.enterprise_ticket_system.DTO.TicketCommentCreateRequest;
+import com.yazilimxyz.enterprise_ticket_system.DTO.TicketAssignRequest;
+import com.yazilimxyz.enterprise_ticket_system.DTO.TicketStatusUpdateRequest;
+import com.yazilimxyz.enterprise_ticket_system.Repositories.TicketRepository;
+import com.yazilimxyz.enterprise_ticket_system.Repositories.TicketCommentRepository;
+import com.yazilimxyz.enterprise_ticket_system.config.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,7 +73,10 @@ public class TicketService {
         User author = userRepository.findById(request.getAuthorId())
                 .orElseThrow(() -> new RuntimeException("User not found: " + request.getAuthorId()));
 
-        TicketComment comment = new TicketComment(ticket, author, request.getContent());
+        TicketComment comment = new TicketComment();
+        comment.setTicket(ticket);
+        comment.setUser(author);
+        comment.setCommentText(request.getContent());
         return ticketCommentRepository.save(comment);
     }
     @Transactional(readOnly = true)

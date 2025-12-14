@@ -1,6 +1,9 @@
-package com.example.ticketapp.ticket;
+package com.yazilimxyz.enterprise_ticket_system.DTO;
 
-public class TicketCreateRequest(){
+import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketCategory;
+import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketPriority;
+
+public class TicketCreateRequest {
     private String title;
     private String description;
     private TicketPriority priority;
@@ -48,5 +51,4 @@ public class TicketCreateRequest(){
     public void setCreatedById(Long createdById) {
         this.createdById = createdById;
     }
-}
 }

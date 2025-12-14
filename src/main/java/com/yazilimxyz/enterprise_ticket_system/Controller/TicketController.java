@@ -1,9 +1,23 @@
-package com.example.ticketapp.ticket;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+package com.yazilimxyz.enterprise_ticket_system.Controller;
 
 import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.yazilimxyz.enterprise_ticket_system.DTO.TicketAssignRequest;
+import com.yazilimxyz.enterprise_ticket_system.DTO.TicketCommentCreateRequest;
+import com.yazilimxyz.enterprise_ticket_system.DTO.TicketCreateRequest;
+import com.yazilimxyz.enterprise_ticket_system.DTO.TicketStatusUpdateRequest;
+import com.yazilimxyz.enterprise_ticket_system.Services.TicketService;
+import com.yazilimxyz.enterprise_ticket_system.entities.Ticket;
+import com.yazilimxyz.enterprise_ticket_system.entities.TicketComment;
 
 @RestController
 @RequestMapping("/api/tickets")
@@ -50,4 +64,3 @@ public class TicketController {
         return ResponseEntity.ok(comments);
     }
 }
-‚

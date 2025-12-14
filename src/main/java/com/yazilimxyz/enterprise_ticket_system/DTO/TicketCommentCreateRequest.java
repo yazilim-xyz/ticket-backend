@@ -1,4 +1,4 @@
-package com.example.ticketapp.ticket;
+package com.yazilimxyz.enterprise_ticket_system.DTO;
 
 public class TicketCommentCreateRequest {
 

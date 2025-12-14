@@ -1,43 +1,59 @@
-import com.yazilimxyz.enterprise_ticket_system.entities.User;
+package com.yazilimxyz.enterprise_ticket_system.entities;
+
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketCategory;
 import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketPriority;
 import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketStatus;
-import jakarta.persistence.*;
-import java.time.OffsetDateTime;
 
-
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name="Tickets")
 public class Ticket {
  //ID
     @Id
-    @GeneretedValue(strategy= GenerationType.IDENTITY)
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
 //colums
-    @Column(nullable=false ,lenght 255)
-    private String tittle;
-    @Column(nullable=false,columnDefination="TEXT")
+    @Column(nullable=false ,length = 255)
+    private String title;
+    @Column(nullable=false,columnDefinition= "TEXT" )
     private String description;
 //enums
-    @Enumerated(EnumType.STRİNG)
-    @Column(nullable=false,lenght 50)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable=false,length = 50)
     private TicketStatus status= TicketStatus.OPEN;
-    @Enumrated(EnumType.STRİNG)
-    @Column(nullable=false,lenght 50)
-    private TicketPriority priority=TicketPriority.MEDİUM;
-    @Enumrated(EnumType.STRİNG)
-    @Column(nullable=false,lenght 50)
-    private TicketCategory category = TicketCatagory.OTHER;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable=false,length = 50)
+    private TicketPriority priority=TicketPriority.MEDIUM;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable=false,length = 50)
+    private TicketCategory category = TicketCategory.OTHER;
 
 //user kısmı
     //kullanıcıyla eslestiriyoruz.Id ler ile olusturma ve assignedleri
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="created_by_id")
     private User createdBy;
-    @ManyToOne(fetch=FetchType.Lazy)
+    @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="assigned_to_id")
-    private User assignedBy;
+    private User assignedTo;
 //eklenebilir
     private OffsetDateTime dueDate;
     @Column(columnDefinition="TEXT")
@@ -45,11 +61,9 @@ public class Ticket {
     @Column(nullable=false)
     private Boolean isDeleted = false;
     @Column(nullable=false)
-    private OffSetDateTime createdAt= OffSetDateTime.now();
+    private OffsetDateTime createdAt= OffsetDateTime.now();
     @Column(nullable=false)
-    private OffSetDateTime updateAt= OffSetDateTime.now();
-    @Column(columnDefinition = "TEXT")
-    private String rerolutionSummary;
+    private OffsetDateTime updatedAt= OffsetDateTime.now();
     @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TicketComment> comments = new ArrayList<>();
 
@@ -63,9 +77,6 @@ public class Ticket {
     public Ticket() {
     }
 
-    public String getresolutionSummary() {
-        return resolutionSummary;
-    }
     public Long getId() {
         return id;
     }
@@ -119,7 +130,7 @@ public class Ticket {
     }
 
     public void setCreatedBy(User createdBy) {
-        this.createdBy = createdBy;//deneme
+        this.createdBy = createdBy;
     }
 
     public User getAssignedTo() {
@@ -170,6 +181,12 @@ public class Ticket {
         this.updatedAt = updatedAt;
     }
 
+    public List<TicketComment> getComments() {
+        return comments;
+    }
 
+    public void setComments(List<TicketComment> comments) {
+        this.comments = comments;
+    }
 
 }
