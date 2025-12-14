@@ -13,9 +13,8 @@ import com.yazilimxyz.enterprise_ticket_system.repository.UserRepository;
 import com.yazilimxyz.enterprise_ticket_system.security.JwtUtil;
 import com.yazilimxyz.enterprise_ticket_system.service.auth.AuthService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -26,12 +25,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class AuthServiceImpl implements AuthService {
     // Business logic for auth
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final BCryptPasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
     @Value("${jwt.refresh-days:30}")
@@ -49,9 +47,7 @@ public class AuthServiceImpl implements AuthService {
     public RegisterResponseDTO register(RegisterRequestDTO request) {
 
         // 1) Check existing email
-        if (userRepository.existsByEmailIgnoreCase(request.email())) {
-            log.debug("[AuthService] Register denied - email already exists (case-insensitive) email={}",
-                    request.email());
+        if (userRepository.existsByEmail(request.email())) {
             throw new BadRequestException("Email already in use");
         }
 
@@ -73,36 +69,28 @@ public class AuthServiceImpl implements AuthService {
                 saved.getId(),
                 saved.getFullName(),
                 saved.getEmail(),
-                saved.getRole()
-        );
+                saved.getRole());
     }
 
     @Override
     public LoginResponseDTO login(LoginRequestDTO request) {
 
-        log.debug("[AuthService] Login attempt email={}", request.email());
         checkRateLimit(request.email());
 
         // 1) Find user
-        User user = userRepository.findByEmailIgnoreCase(request.email())
+        User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> {
                     recordFailedAttempt(request.email());
-                    log.debug("[AuthService] User not found for email={}", request.email());
                     return new UnauthorizedException("Invalid email or password");
                 });
-        log.debug("[AuthService] User loaded id={} email={} active={}", user.getId(), user.getEmail(),
-                user.isActive());
 
         // 2) Block if disabled
         if (!user.isActive()) {
-            log.debug("[AuthService] Login rejected - user inactive email={}", user.getEmail());
             throw new ForbiddenException("Account disabled");
         }
 
         // 3) Verify password
-        boolean matches = passwordEncoder.matches(request.password(), user.getPasswordHash());
-        log.debug("[AuthService] Password match result={} for email={}", matches, user.getEmail());
-        if (!matches) {
+        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             recordFailedAttempt(request.email());
             throw new UnauthorizedException("Invalid email or password");
         }
@@ -113,8 +101,7 @@ public class AuthServiceImpl implements AuthService {
         String token = jwtUtil.generateToken(
                 user.getId(),
                 user.getEmail(),
-                user.getRole().name()
-        );
+                user.getRole().name());
         RefreshToken refreshToken = createRefreshToken(user);
 
         // 5) DTO
@@ -124,8 +111,7 @@ public class AuthServiceImpl implements AuthService {
                 user.getEmail(),
                 user.getRole(),
                 token,
-                refreshToken.getToken()
-        );
+                refreshToken.getToken());
     }
 
     @Override
@@ -155,8 +141,7 @@ public class AuthServiceImpl implements AuthService {
         String newAccess = jwtUtil.generateToken(
                 user.getId(),
                 user.getEmail(),
-                user.getRole().name()
-        );
+                user.getRole().name());
 
         return new LoginResponseDTO(
                 user.getId(),
@@ -164,8 +149,7 @@ public class AuthServiceImpl implements AuthService {
                 user.getEmail(),
                 user.getRole(),
                 newAccess,
-                newRefresh.getToken()
-        );
+                newRefresh.getToken());
     }
 
     private RefreshToken createRefreshToken(User user) {

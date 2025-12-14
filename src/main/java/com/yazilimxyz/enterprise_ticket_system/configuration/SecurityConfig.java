@@ -2,21 +2,16 @@ package com.yazilimxyz.enterprise_ticket_system.configuration;
 
 import com.yazilimxyz.enterprise_ticket_system.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -28,7 +23,6 @@ import java.util.List;
 @Configuration
 @RequiredArgsConstructor
 @EnableMethodSecurity
-@Slf4j
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
@@ -57,6 +51,9 @@ public class SecurityConfig {
 
                         // Herkese açık endpointler
                         .requestMatchers(
+                                "/auth/register",
+                                "/auth/login",
+                                "/auth/refresh",
                                 "/public/**",
                                 "/chat-test.html",
                                 // WebSocket/SockJS handshake ve yardımcı endpointleri serbest bırak
@@ -70,27 +67,28 @@ public class SecurityConfig {
                                 "/swagger-resources/**",
                                 "/webjars/**",
                                 "/configuration/**",
-                                "/api-docs/**",
-                                "/actuator/**")
+                                "/api-docs/**")
+                        // TODO şu üst kısmın değişmesi lazım chat-test.html zaten productionda
+                        // olmayacak. ws ws/** kısımları da herkese açık olmayacak sanırım. onun
+                        // dışındakilere de bi bak
                         .permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/login", "/api/auth/login",
-                                "/auth/register", "/api/auth/register",
-                                "/auth/refresh", "/api/auth/refresh").permitAll()
-                        .requestMatchers("/auth/logout", "/api/auth/logout").authenticated()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/auth/logout").authenticated()
+
+                        // Rol bazlı yetkiler
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/user/**").hasRole("USER")
+
+                        // Diğer tüm endpointler → JWT zorunlu
                         .anyRequest().authenticated())
 
-                .exceptionHandling(ex -> ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+                // JWT filtresini ekle
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
-        SecurityFilterChain chain = http.build();
-        log.debug("[SecurityConfig] Security filter chain initialized with stateless JWT auth");
-        return chain;
+        return http.build();
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
+    public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 

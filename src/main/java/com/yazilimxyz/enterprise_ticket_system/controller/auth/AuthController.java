@@ -1,21 +1,17 @@
 package com.yazilimxyz.enterprise_ticket_system.controller.auth;
 
 import com.yazilimxyz.enterprise_ticket_system.dto.auth.*;
+import com.yazilimxyz.enterprise_ticket_system.entities.User;
 import com.yazilimxyz.enterprise_ticket_system.service.auth.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import com.yazilimxyz.enterprise_ticket_system.exception.UnauthorizedException;
-import com.yazilimxyz.enterprise_ticket_system.security.AuthenticatedUser;
-
 @RestController
-@RequestMapping({"/auth", "/api/auth"})
+@RequestMapping("/auth")
 @RequiredArgsConstructor
-@Slf4j
 public class AuthController {
 
     private final AuthService authService;
@@ -30,7 +26,6 @@ public class AuthController {
     // LOGIN
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO dto) {
-        log.debug("[AuthController] /login hit for email={}", dto.email());
         LoginResponseDTO response = authService.login(dto);
         return ResponseEntity.ok(response);
     }
@@ -44,11 +39,8 @@ public class AuthController {
 
     // LOGOUT (revoke all refresh tokens for user)
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@AuthenticationPrincipal AuthenticatedUser user) {
-        if (user == null) {
-            throw new UnauthorizedException("User not authenticated");
-        }
-        authService.logout(user.id());
+    public ResponseEntity<Void> logout(@AuthenticationPrincipal User user) {
+        authService.logout(user.getId());
         return ResponseEntity.noContent().build();
     }
 }

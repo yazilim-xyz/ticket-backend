@@ -1,7 +1,6 @@
 package com.yazilimxyz.enterprise_ticket_system.configuration;
 
-import java.util.List;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -12,26 +11,21 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
-import com.yazilimxyz.enterprise_ticket_system.entities.User;
-import com.yazilimxyz.enterprise_ticket_system.repository.UserRepository;
-import com.yazilimxyz.enterprise_ticket_system.security.AuthenticatedUser;
+import com.yazilimxyz.enterprise_ticket_system.entities.InternalChat;
 import com.yazilimxyz.enterprise_ticket_system.security.JwtUtil;
 
-import io.jsonwebtoken.Claims;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
 
 @Configuration
 @EnableWebSocketMessageBroker
-@RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    private final JwtUtil jwtUtil;
-    private final UserRepository userRepository;
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
@@ -75,24 +69,19 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
                     if (authHeader != null && authHeader.startsWith("Bearer ")) {
                         String token = authHeader.substring(7); // "Bearer " kısmını at
-                        try {
-                            Claims claims = jwtUtil.parseClaims(token);
-                            Long userId = Long.valueOf(claims.getSubject());
+                        Long userId = jwtUtil.extractUserId(token);
 
-                            User user = userRepository.findById(userId).orElse(null);
-                            if (user == null || !user.isActive()) {
-                                return null;
-                            }
-
-                            AuthenticatedUser principal = new AuthenticatedUser(user.getId(), user.getEmail(),
-                                    user.getRole());
-                            UsernamePasswordAuthenticationToken userAuth = new UsernamePasswordAuthenticationToken(
-                                    principal,
-                                    null,
-                                    List.of(new SimpleGrantedAuthority("ROLE_" + principal.role().name())));
-                            accessor.setUser(userAuth);
-                        } catch (Exception ex) {
-                            return null;
+                        if (userId != null) {
+                            // TEKNİK DETAY: Principal Ataması
+                            // Burada oluşturduğumuz Principal nesnesini (user), o anki WebSocket
+                            // Session'ına yapıştırıyoruz.
+                            // Spring'in "SimpUserRegistry"si bu bilgiyi kullanarak "ali ->
+                            // SessionID:xyz-123" eşleşmesini yapar.
+                            // convertAndSendToUser metodu çalışırken bu eşleşmeye bakar.
+                            UsernamePasswordAuthenticationToken user = new UsernamePasswordAuthenticationToken(
+                                    userId.toString(),
+                                    null, List.of());
+                            accessor.setUser(user);
                         }
                     } else {
                         System.out.println(">>> SOCKET BAĞLANTISI HATALI: Token yok veya geçersiz!");
