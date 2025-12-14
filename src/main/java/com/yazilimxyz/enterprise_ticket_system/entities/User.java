@@ -1,9 +1,24 @@
 package com.yazilimxyz.enterprise_ticket_system.entities;
 
-import jakarta.persistence.*;
-import lombok.*;
 import java.time.LocalDateTime;
 import java.util.List;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "users")
@@ -45,11 +60,11 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private UserPreference preference;
 
-    @OneToMany(mappedBy = "assignedUser", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "assignedTo", fetch = FetchType.LAZY)
     private List<Ticket> assignedTickets;
 
-    @OneToMany(mappedBy = "assignedByAdmin", fetch = FetchType.LAZY)
-    private List<Ticket> adminAssignedTickets;
+    @OneToMany(mappedBy = "createdBy", fetch = FetchType.LAZY)
+    private List<Ticket> createdTickets;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<TicketComment> comments;
