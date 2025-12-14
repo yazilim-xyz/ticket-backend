@@ -8,8 +8,6 @@ public class TicketCreateRequest {
     private String description;
     private TicketPriority priority;
     private TicketCategory category;
-    private Long createdById; // şimdilik direkt userId alıyoruz // TODO bu kimin tarafından oluşturulduğu falan jwtden extract edilecek dışardan alınmayacak
-    //TODO burada assigned to id falan da alınması lazım kime atanacağını belirlemek için.
 
     // Getter & Setter
 
@@ -43,13 +41,5 @@ public class TicketCreateRequest {
 
     public void setCategory(TicketCategory category) {
         this.category = category;
-    }
-
-    public Long getCreatedById() {
-        return createdById;
-    }
-
-    public void setCreatedById(Long createdById) {
-        this.createdById = createdById;
     }
 }

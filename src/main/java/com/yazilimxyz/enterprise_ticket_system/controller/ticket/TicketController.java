@@ -3,6 +3,8 @@ package com.yazilimxyz.enterprise_ticket_system.controller.ticket;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketAssignRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketCommentCreateRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketCreateRequest;
+import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketDto;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketStatusUpdateRequest;
 import com.yazilimxyz.enterprise_ticket_system.entities.Ticket;
 import com.yazilimxyz.enterprise_ticket_system.entities.TicketComment;
@@ -29,10 +32,20 @@ public class TicketController {
         this.ticketService = ticketService;
     }
 
+    // JWT'den user ID'sini al
+    private Long getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            return (Long) authentication.getPrincipal();
+        }
+        throw new RuntimeException("User not authenticated");
+    }
+
     // olusturma
     @PostMapping
     public ResponseEntity<Ticket> createTicket(@RequestBody TicketCreateRequest request) {
-        Ticket created = ticketService.createTicket(request);
+        Long userId = getCurrentUserId();
+        Ticket created = ticketService.createTicket(request, userId);
         return ResponseEntity.ok(created);
     }
 
@@ -64,4 +77,7 @@ public class TicketController {
         List<TicketComment> comments = ticketService.getComments(id);
         return ResponseEntity.ok(comments);
     }
+    @GetMapping("/tickets/{id}")
+    public TicketDto getTicket(@PathVariable Long id) {
+    return ticketService.getTicket(id);}
 }

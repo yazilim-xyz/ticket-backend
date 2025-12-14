@@ -1,22 +1,24 @@
 package com.yazilimxyz.enterprise_ticket_system.service.ticket;
 
-import com.yazilimxyz.enterprise_ticket_system.entities.Ticket;
-import com.yazilimxyz.enterprise_ticket_system.entities.TicketComment;
-import com.yazilimxyz.enterprise_ticket_system.entities.User;
-import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketPriority;
-import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketStatus;
-import com.yazilimxyz.enterprise_ticket_system.repository.UserRepository;
-import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketCategory;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.yazilimxyz.enterprise_ticket_system.Repositories.TicketCommentRepository;
 import com.yazilimxyz.enterprise_ticket_system.Repositories.TicketRepository;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketAssignRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketCommentCreateRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketCreateRequest;
+import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketDto;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketStatusUpdateRequest;
-import com.yazilimxyz.enterprise_ticket_system.Repositories.TicketCommentRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
+import com.yazilimxyz.enterprise_ticket_system.entities.Ticket;
+import com.yazilimxyz.enterprise_ticket_system.entities.TicketComment;
+import com.yazilimxyz.enterprise_ticket_system.entities.User;
+import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketCategory;
+import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketPriority;
+import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketStatus;
+import com.yazilimxyz.enterprise_ticket_system.repository.UserRepository;
 
 @Service
 public class TicketService {
@@ -33,9 +35,9 @@ public class TicketService {
     }
 
     @Transactional
-    public Ticket createTicket(TicketCreateRequest request) {
-        User createdBy = userRepository.findById(request.getCreatedById())
-                .orElseThrow(() -> new RuntimeException("User not found: " + request.getCreatedById()));
+    public Ticket createTicket(TicketCreateRequest request, Long createdById) {
+        User createdBy = userRepository.findById(createdById)
+                .orElseThrow(() -> new RuntimeException("User not found: " + createdById));
 
         Ticket ticket = new Ticket();
         ticket.setTitle(request.getTitle());
@@ -83,6 +85,38 @@ public class TicketService {
         comment.setCommentText(request.getContent());
         return ticketCommentRepository.save(comment);
     }
+
+    public TicketDto getTicket(Long id) {
+    Ticket t = ticketRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Ticket not found"));
+
+    Long createdById = null;
+    String createdByName = null;
+
+    if (t.getCreatedBy() != null) {
+        createdById = t.getCreatedBy().getId();
+        createdByName = t.getCreatedBy().getFullName();
+    }
+
+    Long assignedToId = null;
+    String assignedToName = null;
+
+    if (t.getAssignedTo() != null) {
+        assignedToId = t.getAssignedTo().getId();
+        assignedToName = t.getAssignedTo().getFullName();
+    }
+
+    return new TicketDto(
+            t.getId(),
+            t.getTitle(),
+            t.getDescription(),
+            createdById,
+            createdByName,
+            assignedToId,
+            assignedToName
+    );
+}
+
 
     @Transactional(readOnly = true)
     public List<TicketComment> getComments(Long ticketId) {
