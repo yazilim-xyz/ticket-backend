@@ -1,7 +1,7 @@
-package com.yazilimxyz.enterprise_ticket_system.service;
+package com.yazilimxyz.enterprise_ticket_system.service.excel;
 
 import com.yazilimxyz.enterprise_ticket_system.entities.Ticket;
-import com.yazilimxyz.enterprise_ticket_system.repository.TicketRepository;
+import com.yazilimxyz.enterprise_ticket_system.Repositories.TicketRepository;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
@@ -11,10 +11,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
 
+
 @Service
 @RequiredArgsConstructor
 public class ExcelService {
-
     private final TicketRepository ticketRepository;
 
     /**

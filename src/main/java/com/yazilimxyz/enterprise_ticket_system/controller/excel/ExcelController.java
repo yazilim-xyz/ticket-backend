@@ -1,6 +1,6 @@
-package com.yazilimxyz.enterprise_ticket_system.controller;
+package com.yazilimxyz.enterprise_ticket_system.controller.excel;
 
-import com.yazilimxyz.enterprise_ticket_system.service.ExcelService;
+import com.yazilimxyz.enterprise_ticket_system.service.excel.ExcelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
