@@ -1,4 +1,4 @@
-package com.yazilimxyz.enterprise_ticket_system.DTO;
+package com.yazilimxyz.enterprise_ticket_system.dto.ticket;
 
 import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketStatus;
 

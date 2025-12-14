@@ -1,18 +1,18 @@
-package com.yazilimxyz.enterprise_ticket_system.Services;
+package com.yazilimxyz.enterprise_ticket_system.service.ticket;
 
 import com.yazilimxyz.enterprise_ticket_system.entities.Ticket;
 import com.yazilimxyz.enterprise_ticket_system.entities.TicketComment;
 import com.yazilimxyz.enterprise_ticket_system.entities.User;
 import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketPriority;
 import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketStatus;
+import com.yazilimxyz.enterprise_ticket_system.repository.UserRepository;
 import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketCategory;
-import com.yazilimxyz.enterprise_ticket_system.DTO.TicketCreateRequest;
-import com.yazilimxyz.enterprise_ticket_system.DTO.TicketCommentCreateRequest;
-import com.yazilimxyz.enterprise_ticket_system.DTO.TicketAssignRequest;
-import com.yazilimxyz.enterprise_ticket_system.DTO.TicketStatusUpdateRequest;
 import com.yazilimxyz.enterprise_ticket_system.Repositories.TicketRepository;
+import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketAssignRequest;
+import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketCommentCreateRequest;
+import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketCreateRequest;
+import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketStatusUpdateRequest;
 import com.yazilimxyz.enterprise_ticket_system.Repositories.TicketCommentRepository;
-import com.yazilimxyz.enterprise_ticket_system.config.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,12 +25,13 @@ public class TicketService {
     private final TicketCommentRepository ticketCommentRepository;
 
     public TicketService(TicketRepository ticketRepository,
-                         UserRepository userRepository,
-                         TicketCommentRepository ticketCommentRepository) {
+            UserRepository userRepository,
+            TicketCommentRepository ticketCommentRepository) {
         this.ticketRepository = ticketRepository;
         this.userRepository = userRepository;
         this.ticketCommentRepository = ticketCommentRepository;
     }
+
     @Transactional
     public Ticket createTicket(TicketCreateRequest request) {
         User createdBy = userRepository.findById(request.getCreatedById())
@@ -46,6 +47,7 @@ public class TicketService {
 
         return ticketRepository.save(ticket);
     }
+
     @Transactional
     public Ticket assignTicket(Long ticketId, TicketAssignRequest request) {
         Ticket ticket = ticketRepository.findById(ticketId)
@@ -57,6 +59,7 @@ public class TicketService {
         ticket.setAssignedTo(assignedTo);
         return ticketRepository.save(ticket);
     }
+
     @Transactional
     public Ticket updateStatus(Long ticketId, TicketStatusUpdateRequest request) {
         Ticket ticket = ticketRepository.findById(ticketId)
@@ -65,6 +68,7 @@ public class TicketService {
         ticket.setStatus(request.getStatus());
         return ticketRepository.save(ticket);
     }
+
     @Transactional
     public TicketComment addComment(Long ticketId, TicketCommentCreateRequest request) {
         Ticket ticket = ticketRepository.findById(ticketId)
@@ -79,6 +83,7 @@ public class TicketService {
         comment.setCommentText(request.getContent());
         return ticketCommentRepository.save(comment);
     }
+
     @Transactional(readOnly = true)
     public List<TicketComment> getComments(Long ticketId) {
         return ticketCommentRepository.findByTicketIdOrderByCreatedAtAsc(ticketId);
