@@ -1,11 +1,15 @@
-package com.yazilimxyz.enterprise_ticket_system.admin.service;
+package com.yazilimxyz.enterprise_ticket_system.service.admin;
 
-import com.yazilimxyz.enterprise_ticket_system.admin.dto.user.*;
-import com.yazilimxyz.enterprise_ticket_system.admin.exception.NotFoundException;
-import com.yazilimxyz.enterprise_ticket_system.admin.mapper.AdminUserMapper;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.AdminUserCreateRequest;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.AdminUserResponseDto;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.AdminUserUpdateRequest;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.ChangeUserRoleRequest;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.ChangeUserStatusRequest;
 import com.yazilimxyz.enterprise_ticket_system.entities.Role;
 import com.yazilimxyz.enterprise_ticket_system.entities.User;
 import com.yazilimxyz.enterprise_ticket_system.exception.BadRequestException;
+import com.yazilimxyz.enterprise_ticket_system.exception.NotFoundException;
+import com.yazilimxyz.enterprise_ticket_system.mapper.AdminUserMapper;
 import com.yazilimxyz.enterprise_ticket_system.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;

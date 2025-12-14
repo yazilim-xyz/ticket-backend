@@ -1,7 +1,7 @@
-package com.yazilimxyz.enterprise_ticket_system.admin.mapper;
+package com.yazilimxyz.enterprise_ticket_system.mapper;
 
-import com.yazilimxyz.enterprise_ticket_system.admin.dto.user.AdminUserResponseDto;
-import com.yazilimxyz.enterprise_ticket_system.admin.dto.user.AdminUserUpdateRequest;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.AdminUserResponseDto;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.AdminUserUpdateRequest;
 import com.yazilimxyz.enterprise_ticket_system.entities.User;
 import org.springframework.stereotype.Component;
 
@@ -39,7 +39,7 @@ public class AdminUserMapper {
 
         // department alanın yok – burayı şimdilik yorumda bırakıyoruz.
         // if (req.getDepartment() != null) {
-        //     user.setDepartment(req.getDepartment());
+        // user.setDepartment(req.getDepartment());
         // }
     }
 }

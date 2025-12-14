@@ -1,6 +1,6 @@
-package com.yazilimxyz.enterprise_ticket_system.admin.mapper;
+package com.yazilimxyz.enterprise_ticket_system.mapper;
 
-import com.yazilimxyz.enterprise_ticket_system.admin.dto.ticket.AdminTicketResponseDto;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.AdminTicketResponseDto;
 import com.yazilimxyz.enterprise_ticket_system.entities.Ticket;
 import com.yazilimxyz.enterprise_ticket_system.entities.User;
 import org.springframework.stereotype.Component;
@@ -29,7 +29,7 @@ public class AdminTicketMapper {
         dto.setOwnerEmail(null);
 
         // assignedUser ilişkisinden dolduralım
-        User assigned = t.getAssignedUser(); // entity’de alan adın farklıysa burayı değiştir.
+        User assigned = t.getAssignedTo(); // entity’de alan adın farklıysa burayı değiştir.
         if (assigned != null) {
             dto.setAssignedToId(assigned.getId());
             dto.setAssignedToEmail(assigned.getEmail());

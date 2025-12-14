@@ -42,9 +42,10 @@ public class AdminSeeder implements CommandLineRunner {
             return;
         }
 
-        userRepository.findByEmailIgnoreCase(email).ifPresentOrElse(existing -> {
+        userRepository.findByEmail(email).ifPresentOrElse(existing -> {
             boolean looksEncoded = existing.getPasswordHash() != null
-                    && (existing.getPasswordHash().startsWith("$2") || existing.getPasswordHash().startsWith("{bcrypt}"));
+                    && (existing.getPasswordHash().startsWith("$2")
+                            || existing.getPasswordHash().startsWith("{bcrypt}"));
             if (!looksEncoded) {
                 existing.setPasswordHash(passwordEncoder.encode(existing.getPasswordHash()));
                 existing.setUpdatedAt(LocalDateTime.now());

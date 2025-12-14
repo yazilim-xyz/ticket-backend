@@ -1,6 +1,11 @@
-package com.yazilimxyz.enterprise_ticket_system.admin.service;
+package com.yazilimxyz.enterprise_ticket_system.service.admin;
 
-import com.yazilimxyz.enterprise_ticket_system.admin.dto.user.*;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.AdminUserCreateRequest;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.AdminUserResponseDto;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.AdminUserUpdateRequest;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.ChangeUserRoleRequest;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.ChangeUserStatusRequest;
+
 import org.springframework.data.domain.Page;
 
 public interface AdminUserService {

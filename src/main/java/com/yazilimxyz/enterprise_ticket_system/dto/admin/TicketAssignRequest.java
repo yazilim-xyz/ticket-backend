@@ -1,4 +1,4 @@
-package com.yazilimxyz.enterprise_ticket_system.admin.dto.ticket;
+package com.yazilimxyz.enterprise_ticket_system.dto.admin;
 
 import lombok.Data;
 

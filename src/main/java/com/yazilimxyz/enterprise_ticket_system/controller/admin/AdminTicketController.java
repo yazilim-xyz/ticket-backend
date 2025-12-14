@@ -1,7 +1,10 @@
-package com.yazilimxyz.enterprise_ticket_system.admin.controller;
+package com.yazilimxyz.enterprise_ticket_system.controller.admin;
 
-import com.yazilimxyz.enterprise_ticket_system.admin.dto.ticket.*;
-import com.yazilimxyz.enterprise_ticket_system.admin.service.AdminTicketService;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.AdminTicketResponseDto;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.TicketAssignRequest;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.TicketFilterRequest;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.TicketStatusUpdateRequest;
+import com.yazilimxyz.enterprise_ticket_system.service.admin.AdminTicketService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

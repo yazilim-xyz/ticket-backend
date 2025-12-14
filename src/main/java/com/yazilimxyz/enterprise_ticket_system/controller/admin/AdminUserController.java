@@ -1,7 +1,11 @@
-package com.yazilimxyz.enterprise_ticket_system.admin.controller;
+package com.yazilimxyz.enterprise_ticket_system.controller.admin;
 
-import com.yazilimxyz.enterprise_ticket_system.admin.dto.user.*;
-import com.yazilimxyz.enterprise_ticket_system.admin.service.AdminUserService;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.AdminUserCreateRequest;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.AdminUserResponseDto;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.AdminUserUpdateRequest;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.ChangeUserRoleRequest;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.ChangeUserStatusRequest;
+import com.yazilimxyz.enterprise_ticket_system.service.admin.AdminUserService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

@@ -1,7 +1,10 @@
-package com.yazilimxyz.enterprise_ticket_system.admin.dto.ticket;
+package com.yazilimxyz.enterprise_ticket_system.dto.admin;
 
 import lombok.*;
 import java.time.LocalDateTime;
+
+import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketPriority;
+import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketStatus;
 
 @Data
 @Builder
@@ -11,8 +14,8 @@ public class AdminTicketResponseDto {
     private Long id;
     private String title;
     private String description;
-    private String status;
-    private String priority;
+    private TicketStatus status;
+    private TicketPriority priority;
     private Long ownerId;
     private String ownerEmail;
     private Long assignedToId;

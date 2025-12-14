@@ -1,11 +1,14 @@
-package com.yazilimxyz.enterprise_ticket_system.admin.service;
+package com.yazilimxyz.enterprise_ticket_system.service.admin;
 
-import com.yazilimxyz.enterprise_ticket_system.admin.dto.ticket.*;
-import com.yazilimxyz.enterprise_ticket_system.admin.exception.NotFoundException;
-import com.yazilimxyz.enterprise_ticket_system.admin.mapper.AdminTicketMapper;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.AdminTicketResponseDto;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.TicketAssignRequest;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.TicketFilterRequest;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.TicketStatusUpdateRequest;
 import com.yazilimxyz.enterprise_ticket_system.entities.Ticket;
 import com.yazilimxyz.enterprise_ticket_system.entities.User;
 import com.yazilimxyz.enterprise_ticket_system.exception.BadRequestException;
+import com.yazilimxyz.enterprise_ticket_system.exception.NotFoundException;
+import com.yazilimxyz.enterprise_ticket_system.mapper.AdminTicketMapper;
 import com.yazilimxyz.enterprise_ticket_system.repository.TicketRepository;
 import com.yazilimxyz.enterprise_ticket_system.repository.UserRepository;
 import com.yazilimxyz.enterprise_ticket_system.security.AuthenticatedUser;
@@ -16,6 +19,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 @Service
 @RequiredArgsConstructor
@@ -29,8 +34,7 @@ public class AdminTicketServiceImpl implements AdminTicketService {
     public Page<AdminTicketResponseDto> getTickets(TicketFilterRequest f) {
         // Şimdilik filtre uygulamıyoruz, sadece pagination:
         Page<Ticket> page = ticketRepo.findAll(
-                PageRequest.of(f.getPage(), f.getSize(), Sort.by("id").descending())
-        );
+                PageRequest.of(f.getPage(), f.getSize(), Sort.by("id").descending()));
         return page.map(mapper::toDto);
     }
 
@@ -50,8 +54,8 @@ public class AdminTicketServiceImpl implements AdminTicketService {
             throw new BadRequestException("Status is required");
         }
 
-        t.setStatus(r.getStatus().toUpperCase());
-        t.setUpdatedAt(LocalDateTime.now());
+        t.setStatus(r.getStatus());
+        t.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
         ticketRepo.save(t);
     }
 
@@ -67,15 +71,15 @@ public class AdminTicketServiceImpl implements AdminTicketService {
         User u = userRepo.findById(r.getAssignedToUserId())
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + r.getAssignedToUserId()));
 
-        t.setAssignedUser(u);
+        t.setAssignedTo(u);
         Long currentUserId = currentUserId();
         if (currentUserId != null) {
             User admin = userRepo.findById(currentUserId)
                     .orElseThrow(() -> new NotFoundException("Acting admin user not found"));
-            t.setAssignedByAdmin(admin);
+            t.setCreatedBy(admin);
         }
 
-        t.setUpdatedAt(LocalDateTime.now());
+        t.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
         ticketRepo.save(t);
     }
 

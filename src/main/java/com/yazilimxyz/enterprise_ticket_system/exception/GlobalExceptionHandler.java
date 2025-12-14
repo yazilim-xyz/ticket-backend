@@ -10,8 +10,6 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.yazilimxyz.enterprise_ticket_system.admin.exception.NotFoundException;
-
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
