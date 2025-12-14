@@ -78,11 +78,11 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/user/**").hasRole("USER")
 
-                // Diğer tüm endpointler → JWT zorunlu
-                // .anyRequest().authenticated())
+                        // Diğer tüm endpointler → JWT zorunlu
+                        .anyRequest().authenticated())
 
                 // JWT filtresini ekle
-                ).addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

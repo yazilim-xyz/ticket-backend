@@ -24,50 +24,49 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name="Tickets")
+@Table(name = "Tickets")
 public class Ticket {
- //ID
+    // ID
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-//colums
-    @Column(nullable=false ,length = 255)
+    // colums
+    @Column(nullable = false, length = 255)
     private String title;
-    @Column(nullable=false,columnDefinition= "TEXT" )
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
-//enums
+    // enums
     @Enumerated(EnumType.STRING)
-    @Column(nullable=false,length = 50)
-    private TicketStatus status= TicketStatus.OPEN;
+    @Column(nullable = false, length = 50)
+    private TicketStatus status = TicketStatus.OPEN;
     @Enumerated(EnumType.STRING)
-    @Column(nullable=false,length = 50)
-    private TicketPriority priority=TicketPriority.MEDIUM;
+    @Column(nullable = false, length = 50)
+    private TicketPriority priority = TicketPriority.MEDIUM;
     @Enumerated(EnumType.STRING)
-    @Column(nullable=false,length = 50)
+    @Column(nullable = false, length = 50)
     private TicketCategory category = TicketCategory.OTHER;
 
-//user kısmı
-    //kullanıcıyla eslestiriyoruz.Id ler ile olusturma ve assignedleri
-    @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="created_by_id")
+    // user kısmı
+    // kullanıcıyla eslestiriyoruz.Id ler ile olusturma ve assignedleri
+    // TODO lazyden dolayı olabilir loop olarak kendi kendine sonsuza kadar ticket - user - ticket - user çekiyor bunu düzeltmek lazım
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by_id")
     private User createdBy;
-    @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="assigned_to_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_to_id")
     private User assignedTo;
-//eklenebilir
+    // eklenebilir
     private OffsetDateTime dueDate;
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition = "TEXT")
     private String resolutionSummary;
-    @Column(nullable=false)
+    @Column(nullable = false)
     private Boolean isDeleted = false;
-    @Column(nullable=false)
-    private OffsetDateTime createdAt= OffsetDateTime.now();
-    @Column(nullable=false)
-    private OffsetDateTime updatedAt= OffsetDateTime.now();
+    @Column(nullable = false)
+    private OffsetDateTime createdAt = OffsetDateTime.now();
+    @Column(nullable = false)
+    private OffsetDateTime updatedAt = OffsetDateTime.now();
     @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TicketComment> comments = new ArrayList<>();
-
-
 
     @PreUpdate
     public void onUpdate() {
