@@ -5,11 +5,17 @@ import com.yazilimxyz.enterprise_ticket_system.admin.exception.NotFoundException
 import com.yazilimxyz.enterprise_ticket_system.admin.mapper.AdminTicketMapper;
 import com.yazilimxyz.enterprise_ticket_system.entities.Ticket;
 import com.yazilimxyz.enterprise_ticket_system.entities.User;
+import com.yazilimxyz.enterprise_ticket_system.exception.BadRequestException;
 import com.yazilimxyz.enterprise_ticket_system.repository.TicketRepository;
 import com.yazilimxyz.enterprise_ticket_system.repository.UserRepository;
+import com.yazilimxyz.enterprise_ticket_system.security.AuthenticatedUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -40,8 +46,12 @@ public class AdminTicketServiceImpl implements AdminTicketService {
         Ticket t = ticketRepo.findById(id)
                 .orElseThrow(() -> new NotFoundException("Ticket not found with id: " + id));
 
-        // Sende status String, enum yok:
+        if (r.getStatus() == null) {
+            throw new BadRequestException("Status is required");
+        }
+
         t.setStatus(r.getStatus().toUpperCase());
+        t.setUpdatedAt(LocalDateTime.now());
         ticketRepo.save(t);
     }
 
@@ -50,13 +60,40 @@ public class AdminTicketServiceImpl implements AdminTicketService {
         Ticket t = ticketRepo.findById(id)
                 .orElseThrow(() -> new NotFoundException("Ticket not found with id: " + id));
 
+        if (r.getAssignedToUserId() == null) {
+            throw new BadRequestException("assignedToUserId is required");
+        }
+
         User u = userRepo.findById(r.getAssignedToUserId())
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + r.getAssignedToUserId()));
 
-        // Entity’de alan adın büyük ihtimalle assignedUser:
         t.setAssignedUser(u);
-        // Eğer alan adın farklıysa (ör: setAssigned_user), bunu kendine göre düzelt.
+        Long currentUserId = currentUserId();
+        if (currentUserId != null) {
+            User admin = userRepo.findById(currentUserId)
+                    .orElseThrow(() -> new NotFoundException("Acting admin user not found"));
+            t.setAssignedByAdmin(admin);
+        }
 
+        t.setUpdatedAt(LocalDateTime.now());
         ticketRepo.save(t);
+    }
+
+    private Long currentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            return null;
+        }
+
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof AuthenticatedUser user) {
+            return user.id();
+        }
+
+        try {
+            return Long.parseLong(authentication.getName());
+        } catch (NumberFormatException ex) {
+            return null;
+        }
     }
 }

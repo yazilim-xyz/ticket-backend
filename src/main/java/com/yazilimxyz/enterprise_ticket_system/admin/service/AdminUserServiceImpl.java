@@ -3,12 +3,16 @@ package com.yazilimxyz.enterprise_ticket_system.admin.service;
 import com.yazilimxyz.enterprise_ticket_system.admin.dto.user.*;
 import com.yazilimxyz.enterprise_ticket_system.admin.exception.NotFoundException;
 import com.yazilimxyz.enterprise_ticket_system.admin.mapper.AdminUserMapper;
+import com.yazilimxyz.enterprise_ticket_system.entities.Role;
 import com.yazilimxyz.enterprise_ticket_system.entities.User;
+import com.yazilimxyz.enterprise_ticket_system.exception.BadRequestException;
 import com.yazilimxyz.enterprise_ticket_system.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -33,22 +37,29 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     @Override
     public AdminUserResponseDto createUser(AdminUserCreateRequest req) {
+        if (req.getEmail() == null || req.getEmail().isBlank()) {
+            throw new BadRequestException("Email is required");
+        }
+        if (userRepo.existsByEmail(req.getEmail())) {
+            throw new BadRequestException("Email already in use");
+        }
+        if (req.getPassword() == null || req.getPassword().isBlank()) {
+            throw new BadRequestException("Password is required");
+        }
+
         User user = new User();
         user.setEmail(req.getEmail());
         user.setFullName(req.getFullName());
 
-        // tablo: password_hash
         user.setPasswordHash(encoder.encode(req.getPassword()));
 
-        // role String
-        if (req.getRole() != null) {
-            user.setRole(req.getRole().toUpperCase());
-        }
+        Role role = req.getRole() != null ? parseRole(req.getRole()) : Role.USER;
+        user.setRole(role);
+        user.setActive(true);
+        user.setCreatedAt(LocalDateTime.now());
+        user.setUpdatedAt(LocalDateTime.now());
 
-        // department, active vs yok → şimdilik eklemiyoruz
-
-        User saved = userRepo.save(user);
-        return mapper.toDto(saved);
+        return mapper.toDto(userRepo.save(user));
     }
 
     @Override
@@ -57,21 +68,32 @@ public class AdminUserServiceImpl implements AdminUserService {
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + id));
 
         mapper.updateFromRequest(req, user);
+        user.setUpdatedAt(LocalDateTime.now());
 
-        User updated = userRepo.save(user);
-        return mapper.toDto(updated);
+        return mapper.toDto(userRepo.save(user));
     }
 
     @Override
     public void changeUserStatus(Long id, ChangeUserStatusRequest req) {
-        // Şu an User entity'de status/active alanı yok.
-        // Yine de user var mı kontrol edelim, yoksa 404 fırlatalım.
-        userRepo.findById(id)
+        User user = userRepo.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + id));
 
-        // Buraya ileride status/active alanı eklersen:
-        // user.setActive("ACTIVE".equalsIgnoreCase(req.getStatus()));
-        // userRepo.save(user);
+        if (req.getStatus() == null) {
+            throw new BadRequestException("Status is required");
+        }
+
+        String status = req.getStatus().trim().toUpperCase();
+        boolean activate;
+        if ("ACTIVE".equals(status)) {
+            activate = true;
+        } else if ("DISABLED".equals(status)) {
+            activate = false;
+        } else {
+            throw new BadRequestException("Unknown status: " + req.getStatus());
+        }
+        user.setActive(activate);
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepo.save(user);
     }
 
     @Override
@@ -79,7 +101,19 @@ public class AdminUserServiceImpl implements AdminUserService {
         User user = userRepo.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + id));
 
-        user.setRole(req.getRole().toUpperCase());
+        user.setRole(parseRole(req.getRole()));
+        user.setUpdatedAt(LocalDateTime.now());
         userRepo.save(user);
+    }
+
+    private Role parseRole(String roleValue) {
+        if (roleValue == null) {
+            throw new BadRequestException("Role is required");
+        }
+        try {
+            return Role.valueOf(roleValue.toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            throw new BadRequestException("Unknown role: " + roleValue);
+        }
     }
 }

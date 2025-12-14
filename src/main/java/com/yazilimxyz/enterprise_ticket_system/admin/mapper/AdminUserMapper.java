@@ -18,15 +18,12 @@ public class AdminUserMapper {
         dto.setEmail(user.getEmail());
         dto.setFullName(user.getFullName());
 
-        // Sende role String (varchar(30)) – enum değil:
-        dto.setRole(user.getRole());
+        dto.setRole(user.getRole() != null ? user.getRole().name() : null);
 
-        // Sende active, department, lastLoginAt alanları yok.
-        // DTO alanlarını şimdilik default verelim:
-        dto.setActive(true);              // şimdilik hep true kabul edelim
-        dto.setDepartment(null);          // ileride eklersen doldurursun
+        dto.setActive(user.isActive());
+        dto.setDepartment(null);
         dto.setCreatedAt(user.getCreatedAt());
-        dto.setLastLoginAt(null);         // entity'de yok
+        dto.setLastLoginAt(null);
 
         return dto;
     }

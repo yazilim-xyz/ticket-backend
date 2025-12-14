@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Test - Enterprise Ticket System</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #667eea;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .status {
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .status.connected {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .status.disconnected {
+            background: #f44336;
+            color: white;
+        }
+
+        .auth-section,
+        .chat-section {
+            padding: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .messages {
+            height: 400px;
+            overflow-y: auto;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #f9f9f9;
+        }
+
+        .message {
+            margin-bottom: 12px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+
+        .message.sent {
+            background: #667eea;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .message.received {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .message-meta {
+            font-size: 11px;
+            margin-top: 5px;
+            opacity: 0.8;
+        }
+
+        .send-box {
+            display: flex;
+            gap: 10px;
+        }
+
+        .send-box input {
+            flex: 1;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .info-box strong {
+            color: #1976d2;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💬 Chat Test Application</h1>
+        </div>
+
+        <div id="statusBar" class="status disconnected">
+            🔴 Disconnected
+        </div>
+
+        <!-- Authentication Section -->
+        <div id="authSection" class="auth-section">
+            <h2>🔐 Authentication</h2>
+            <div class="input-group">
+                <label for="jwtToken">JWT Token:</label>
+                <input type="text" id="jwtToken" placeholder="Paste your JWT token here..." />
+            </div>
+            <button onclick="connect()">Connect to WebSocket</button>
+        </div>
+
+        <!-- Chat Section -->
+        <div id="chatSection" class="chat-section hidden">
+            <div class="info-box">
+                <strong>Your User ID:</strong> <span id="currentUserId">-</span>
+            </div>
+
+            <div class="input-group">
+                <label for="otherUserId">Chat with User ID:</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="otherUserId" placeholder="Enter user ID to chat with..." />
+                    <button onclick="loadChatHistory()">Load History</button>
+                </div>
+            </div>
+
+            <div class="messages" id="messagesContainer">
+                <p style="text-align: center; color: #999;">No messages yet. Select a user to start chatting.</p>
+            </div>
+
+            <div class="send-box">
+                <input type="text" id="messageInput" placeholder="Type your message..."
+                    onkeypress="handleKeyPress(event)" />
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let stompClient = null;
+        let currentUserId = null;
+        let selectedUserId = null;
+        let jwtToken = null;
+
+        function connect() {
+            jwtToken = document.getElementById('jwtToken').value.trim();
+
+            if (!jwtToken) {
+                alert('❌ Please enter a JWT token!');
+                return;
+            }
+
+            // Extract userId from JWT (simple base64 decode)
+            try {
+                const payload = JSON.parse(atob(jwtToken.split('.')[1]));
+                currentUserId = payload.sub;
+                document.getElementById('currentUserId').textContent = currentUserId;
+            } catch (error) {
+                alert('❌ Invalid JWT token format!');
+                return;
+            }
+
+            const socket = new SockJS('http://localhost:8081/ws');
+            stompClient = Stomp.over(socket);
+
+            stompClient.connect(
+                { 'Authorization': 'Bearer ' + jwtToken },
+                function (frame) {
+                    console.log('✅ Connected: ' + frame);
+                    updateStatus(true);
+
+                    // Subscribe to personal message queue
+                    stompClient.subscribe('/user/queue/messages', function (message) {
+                        const chatMessage = JSON.parse(message.body);
+                        handleIncomingMessage(chatMessage);
+                    });
+
+                    // Switch UI
+                    document.getElementById('authSection').classList.add('hidden');
+                    document.getElementById('chatSection').classList.remove('hidden');
+                },
+                function (error) {
+                    console.error('❌ Connection error:', error);
+                    alert('Failed to connect to WebSocket!');
+                    updateStatus(false);
+                }
+            );
+        }
+
+        function updateStatus(connected) {
+            const statusBar = document.getElementById('statusBar');
+            if (connected) {
+                statusBar.className = 'status connected';
+                statusBar.textContent = '🟢 Connected';
+            } else {
+                statusBar.className = 'status disconnected';
+                statusBar.textContent = '🔴 Disconnected';
+            }
+        }
+
+        function loadChatHistory() {
+            selectedUserId = document.getElementById('otherUserId').value.trim();
+
+            if (!selectedUserId) {
+                alert('❌ Please enter a user ID!');
+                return;
+            }
+
+            fetch(`http://localhost:8081/api/messages/${selectedUserId}`, {
+                headers: {
+                    'Authorization': 'Bearer ' + jwtToken
+                }
+            })
+                .then(response => response.json())
+                .then(messages => {
+                    const container = document.getElementById('messagesContainer');
+                    container.innerHTML = '';
+
+                    if (messages.length === 0) {
+                        container.innerHTML = '<p style="text-align: center; color: #999;">No message history with this user.</p>';
+                    } else {
+                        messages.forEach(msg => displayMessage(msg));
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Failed to load chat history:', error);
+                    alert('Failed to load chat history!');
+                });
+        }
+
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const messageText = messageInput.value.trim();
+
+            if (!selectedUserId) {
+                alert('❌ Please select a user to chat with first!');
+                return;
+            }
+
+            if (!messageText) {
+                alert('❌ Please enter a message!');
+                return;
+            }
+
+            const messageDto = {
+                receiverId: parseInt(selectedUserId),
+                message: messageText
+            };
+
+            stompClient.send('/app/chat', {}, JSON.stringify(messageDto));
+
+            // Display sent message immediately (DTO format)
+            displayMessage({
+                id: null,
+                senderId: parseInt(currentUserId),
+                senderName: 'You',
+                receiverId: parseInt(selectedUserId),
+                receiverName: 'User ' + selectedUserId,
+                message: messageText,
+                createdAt: new Date().toISOString()
+            });
+
+            messageInput.value = '';
+        }
+
+        function handleIncomingMessage(chatMessage) {
+            // WebSocket'ten gelen mesaj artık DTO formatında
+            const senderId = chatMessage.senderId;
+
+            if (selectedUserId && senderId == selectedUserId) {
+                // Message from current chat partner - display it
+                displayMessage(chatMessage);
+            } else {
+                // Message from someone else - show alert
+                alert(`📩 New message from ${chatMessage.senderName} (ID: ${senderId}): ${chatMessage.message}`);
+            }
+        }
+
+        function displayMessage(msg) {
+            const container = document.getElementById('messagesContainer');
+            const messageDiv = document.createElement('div');
+
+            // DTO format (hem API hem WebSocket aynı format)
+            const isSent = msg.senderId == currentUserId;
+            messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
+
+            const time = new Date(msg.createdAt).toLocaleTimeString('tr-TR', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            messageDiv.innerHTML = `
+                <div>${msg.message}</div>
+                <div class="message-meta">${time}</div>
+            `;
+
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        } function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        window.addEventListener('beforeunload', function () {
+            if (stompClient !== null) {
+                stompClient.disconnect();
+            }
+        });
+    </script>
+</body>
+
+</html>

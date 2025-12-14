@@ -20,10 +20,18 @@ public class AiTicketSuggestion {
     @Column(name = "suggestion_text", columnDefinition = "text", nullable = false)
     private String suggestionText;
 
-    // precision 4 scale 2 -> numeric(4,2)
+
     @Column(name = "confidence_score", precision = 4, scale = 2)
     private BigDecimal confidenceScore;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 }
+
+
+
+
+
+
+
+

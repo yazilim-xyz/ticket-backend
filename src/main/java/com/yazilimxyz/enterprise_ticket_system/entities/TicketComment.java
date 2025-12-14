@@ -2,12 +2,17 @@ package com.yazilimxyz.enterprise_ticket_system.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "ticket_comments")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class TicketComment {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,3 +31,19 @@ public class TicketComment {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
