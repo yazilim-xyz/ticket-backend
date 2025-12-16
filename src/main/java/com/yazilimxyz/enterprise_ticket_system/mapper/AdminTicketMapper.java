@@ -29,14 +29,14 @@ public class AdminTicketMapper {
         dto.setOwnerEmail(null);
 
         // assignedUser ilişkisinden dolduralım
-        User assigned = t.getAssignedTo(); // entity’de alan adın farklıysa burayı değiştir.
+        User assigned = t.getAssignedTo(); // entity'de alan adın farklıysa burayı değiştir.
         if (assigned != null) {
             dto.setAssignedToId(assigned.getId());
             dto.setAssignedToEmail(assigned.getEmail());
         }
 
-        dto.setCreatedAt(t.getCreatedAt());
-        dto.setUpdatedAt(t.getUpdatedAt());
+        dto.setCreatedAt(t.getCreatedAt() != null ? t.getCreatedAt().toLocalDateTime() : null);
+        dto.setUpdatedAt(t.getUpdatedAt() != null ? t.getUpdatedAt().toLocalDateTime() : null);
 
         return dto;
     }
