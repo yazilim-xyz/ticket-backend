@@ -9,7 +9,7 @@ import com.yazilimxyz.enterprise_ticket_system.entities.User;
 import com.yazilimxyz.enterprise_ticket_system.exception.BadRequestException;
 import com.yazilimxyz.enterprise_ticket_system.exception.NotFoundException;
 import com.yazilimxyz.enterprise_ticket_system.mapper.AdminTicketMapper;
-import com.yazilimxyz.enterprise_ticket_system.repository.TicketRepository;
+import com.yazilimxyz.enterprise_ticket_system.Repositories.TicketRepository;
 import com.yazilimxyz.enterprise_ticket_system.repository.UserRepository;
 import com.yazilimxyz.enterprise_ticket_system.security.AuthenticatedUser;
 import lombok.RequiredArgsConstructor;
