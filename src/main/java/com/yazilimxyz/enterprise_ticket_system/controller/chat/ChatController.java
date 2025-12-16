@@ -26,78 +26,81 @@ import java.util.stream.Collectors;
 
 @Controller
 public class ChatController {
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate;
+        @Autowired
+        private SimpMessagingTemplate messagingTemplate;
 
-    @Autowired
-    private MessageRepository messageRepository;
+        @Autowired
+        private MessageRepository messageRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+        @Autowired
+        private UserRepository userRepository;
 
-    @Autowired
-    private SimpUserRegistry simpUserRegistry;
+        @Autowired
+        private SimpUserRegistry simpUserRegistry;
 
-    // TODO kullanıcılar elle user id girmeyecek onun yerine çalışanları listeleyen bir endpoint lazım. getallusers gibi. 
-    // oradan seçtiğine mesaj gidecek ve oradan seçtiğiyle olan geçmiş mesajları görecek. elle id girilemeyeceğinden böyle olması lazım
+        // TODO kullanıcılar elle user id girmeyecek onun yerine çalışanları listeleyen
+        // bir endpoint lazım. getallusers gibi.
+        // oradan seçtiğine mesaj gidecek ve oradan seçtiğiyle olan geçmiş mesajları
+        // görecek. elle id girilemeyeceğinden böyle olması lazım
 
-    @MessageMapping("/chat")
-    public void processMessage(@Payload MessageDto messageDto, Principal principal) {
+        @MessageMapping("/chat")
+        public void processMessage(@Payload MessageDto messageDto, Principal principal) {
 
-        InternalChat chatMessage = new InternalChat();
-        long senderId = Long.parseLong(principal.getName());
+                InternalChat chatMessage = new InternalChat();
+                long senderId = Long.parseLong(principal.getName());
 
-        // Fetch sender and receiver from database
-        User sender = userRepository.findById(senderId)
-                .orElseThrow(() -> new RuntimeException("Sender not found"));
-        User receiver = userRepository.findById(messageDto.receiverId())
-                .orElseThrow(() -> new RuntimeException("Receiver not found"));
+                // Fetch sender and receiver from database
+                User sender = userRepository.findById(senderId)
+                                .orElseThrow(() -> new RuntimeException("Sender not found"));
+                User receiver = userRepository.findById(messageDto.receiverId())
+                                .orElseThrow(() -> new RuntimeException("Receiver not found"));
 
-        chatMessage.setSender(sender);
-        chatMessage.setReceiver(receiver);
-        chatMessage.setMessage(messageDto.message());
-        chatMessage.setCreatedAt(LocalDateTime.now());
+                chatMessage.setSender(sender);
+                chatMessage.setReceiver(receiver);
+                chatMessage.setMessage(messageDto.message());
+                chatMessage.setCreatedAt(LocalDateTime.now());
 
-        // Save to database
-        InternalChat savedMessage = messageRepository.save(chatMessage);
+                // Save to database
+                InternalChat savedMessage = messageRepository.save(chatMessage);
 
-        // Convert to DTO for WebSocket response
-        ChatMessageResponseDto responseDto = new ChatMessageResponseDto(
-                savedMessage.getId(),
-                sender.getId(),
-                sender.getFullName(),
-                receiver.getId(),
-                receiver.getFullName(),
-                savedMessage.getMessage(),
-                savedMessage.getCreatedAt());
+                // Convert to DTO for WebSocket response
+                ChatMessageResponseDto responseDto = new ChatMessageResponseDto(
+                                savedMessage.getId(),
+                                sender.getId(),
+                                sender.getFullName(),
+                                receiver.getId(),
+                                receiver.getFullName(),
+                                savedMessage.getMessage(),
+                                savedMessage.getCreatedAt());
 
-        // Send DTO to the receiver if they are connected
-        messagingTemplate.convertAndSendToUser(
-                messageDto.receiverId().toString(),
-                "/queue/messages",
-                responseDto);
-    }
+                // Send DTO to the receiver if they are connected
+                messagingTemplate.convertAndSendToUser(
+                                messageDto.receiverId().toString(),
+                                "/queue/messages",
+                                responseDto);
+        }
 
-    @GetMapping("api/messages/{otherUserId}")
-    public ResponseEntity<List<ChatMessageResponseDto>> getChatHistory(@PathVariable Long otherUserId,
-            Principal principal) {
-        long userId = Long.parseLong(principal.getName());
+        @GetMapping("api/messages/{otherUserId}")
+        public ResponseEntity<List<ChatMessageResponseDto>> getChatHistory(@PathVariable Long otherUserId,
+                        Principal principal) {
+                long userId = Long.parseLong(principal.getName());
 
-        List<InternalChat> messages = messageRepository.findBySender_IdAndReceiver_IdOrSender_IdAndReceiver_Id(userId,
-                otherUserId, otherUserId, userId);
-        messages.sort(Comparator.comparing(InternalChat::getCreatedAt));
+                List<InternalChat> messages = messageRepository.findBySender_IdAndReceiver_IdOrSender_IdAndReceiver_Id(
+                                userId,
+                                otherUserId, otherUserId, userId);
+                messages.sort(Comparator.comparing(InternalChat::getCreatedAt));
 
-        List<ChatMessageResponseDto> responseDtos = messages.stream()
-                .map(msg -> new ChatMessageResponseDto(
-                        msg.getId(),
-                        msg.getSender().getId(),
-                        msg.getSender().getFullName(),
-                        msg.getReceiver().getId(),
-                        msg.getReceiver().getFullName(),
-                        msg.getMessage(),
-                        msg.getCreatedAt()))
-                .collect(Collectors.toList());
+                List<ChatMessageResponseDto> responseDtos = messages.stream()
+                                .map(msg -> new ChatMessageResponseDto(
+                                                msg.getId(),
+                                                msg.getSender().getId(),
+                                                msg.getSender().getFullName(),
+                                                msg.getReceiver().getId(),
+                                                msg.getReceiver().getFullName(),
+                                                msg.getMessage(),
+                                                msg.getCreatedAt()))
+                                .collect(Collectors.toList());
 
-        return ResponseEntity.ok(responseDtos);
-    }
+                return ResponseEntity.ok(responseDtos);
+        }
 }

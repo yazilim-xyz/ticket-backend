@@ -1,0 +1,19 @@
+package com.yazilimxyz.enterprise_ticket_system.admin.dto.user;
+
+import lombok.*;
+import java.time.LocalDateTime;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class AdminUserResponseDto {
+    private Long id;
+    private String email;
+    private String fullName;
+    private String role;
+    private boolean active;
+    private String department;
+    private LocalDateTime createdAt;
+    private LocalDateTime lastLoginAt;
+}

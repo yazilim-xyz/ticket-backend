@@ -69,8 +69,7 @@ public class AuthServiceImpl implements AuthService {
                 saved.getId(),
                 saved.getFullName(),
                 saved.getEmail(),
-                saved.getRole()
-        );
+                saved.getRole());
     }
 
     @Override
@@ -102,8 +101,7 @@ public class AuthServiceImpl implements AuthService {
         String token = jwtUtil.generateToken(
                 user.getId(),
                 user.getEmail(),
-                user.getRole().name()
-        );
+                user.getRole().name());
         RefreshToken refreshToken = createRefreshToken(user);
 
         // 5) DTO
@@ -113,8 +111,7 @@ public class AuthServiceImpl implements AuthService {
                 user.getEmail(),
                 user.getRole(),
                 token,
-                refreshToken.getToken()
-        );
+                refreshToken.getToken());
     }
 
     @Override
@@ -144,8 +141,7 @@ public class AuthServiceImpl implements AuthService {
         String newAccess = jwtUtil.generateToken(
                 user.getId(),
                 user.getEmail(),
-                user.getRole().name()
-        );
+                user.getRole().name());
 
         return new LoginResponseDTO(
                 user.getId(),
@@ -153,8 +149,7 @@ public class AuthServiceImpl implements AuthService {
                 user.getEmail(),
                 user.getRole(),
                 newAccess,
-                newRefresh.getToken()
-        );
+                newRefresh.getToken());
     }
 
     private RefreshToken createRefreshToken(User user) {
