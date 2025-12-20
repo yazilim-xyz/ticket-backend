@@ -56,6 +56,7 @@ public class SecurityConfig {
                                 "/auth/refresh",
                                 "/public/**",
                                 "/chat-test.html",
+                                "/notification-test.html",
                                 // WebSocket/SockJS handshake ve yardımcı endpointleri serbest bırak
                                 "/ws",
                                 "/ws/**",

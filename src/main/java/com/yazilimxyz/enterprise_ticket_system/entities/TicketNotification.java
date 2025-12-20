@@ -18,7 +18,7 @@ public class TicketNotification {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ticket_id")
+    @JoinColumn(name = "ticket_id", nullable = true)
     private Ticket ticket;
 
     @ManyToOne(fetch = FetchType.LAZY)
