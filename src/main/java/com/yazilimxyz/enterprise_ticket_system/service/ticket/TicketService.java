@@ -12,13 +12,18 @@ import com.yazilimxyz.enterprise_ticket_system.Repositories.TicketRepository;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketAssignRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketCommentCreateRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketCreateRequest;
+import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketResolutionStatsDTO;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketStatusUpdateRequest;
 import com.yazilimxyz.enterprise_ticket_system.Repositories.TicketCommentRepository;
 import com.yazilimxyz.enterprise_ticket_system.service.notification.NotificationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class TicketService {
@@ -159,5 +164,77 @@ public class TicketService {
         @Transactional(readOnly = true)
         public List<TicketComment> getComments(Long ticketId) {
                 return ticketCommentRepository.findByTicketIdOrderByCreatedAtAsc(ticketId);
+        }
+
+        /**
+         * Top 5 en çok ticket çözen çalışanları getir
+         * Her biri için: çözülen sayı, çözülmeyen sayı, başarı yüzdesi, ortalama çözme süresi
+         */
+        @Transactional(readOnly = true)
+        public List<TicketResolutionStatsDTO> getTopTicketResolvers() {
+                List<Ticket> allTickets = ticketRepository.findAll();
+
+                // Atanan kullanıcılara göre grupla
+                Map<User, List<Ticket>> ticketsByAssignee = allTickets.stream()
+                                .filter(t -> t.getAssignedTo() != null && !t.getIsDeleted())
+                                .collect(Collectors.groupingBy(Ticket::getAssignedTo));
+
+                // İstatistikleri hesapla
+                List<TicketResolutionStatsDTO> stats = new ArrayList<>();
+
+                for (Map.Entry<User, List<Ticket>> entry : ticketsByAssignee.entrySet()) {
+                        User assignee = entry.getKey();
+                        List<Ticket> tickets = entry.getValue();
+
+                        // Çözülen ticket'lar (RESOLVED, CLOSED)
+                        List<Ticket> resolvedTickets = tickets.stream()
+                                        .filter(t -> t.getStatus() == TicketStatus.RESOLVED
+                                                        || t.getStatus() == TicketStatus.CLOSED)
+                                        .collect(Collectors.toList());
+
+                        // Çözülmeyen ticket'lar
+                        Long unResolvedCount = tickets.size() - resolvedTickets.size();
+                        Long resolvedCount = (long) resolvedTickets.size();
+
+                        // Başarı yüzdesi
+                        Double successRate = (resolvedCount == 0) ? 0.0
+                                        : (resolvedCount.doubleValue() / tickets.size()) * 100;
+
+                        // Ortalama çözme süresi (dakika)
+                        Long averageResolutionTime = 0L;
+                        if (!resolvedTickets.isEmpty()) {
+                                long totalMinutes = resolvedTickets.stream()
+                                                .mapToLong(t -> {
+                                                        OffsetDateTime created = t.getCreatedAt();
+                                                        OffsetDateTime updated = t.getUpdatedAt();
+                                                        if (created != null && updated != null) {
+                                                                return java.time.temporal.ChronoUnit.MINUTES
+                                                                                .between(created, updated);
+                                                        }
+                                                        return 0;
+                                                })
+                                                .sum();
+                                averageResolutionTime = totalMinutes / resolvedTickets.size();
+                        }
+
+                        TicketResolutionStatsDTO dto = TicketResolutionStatsDTO.builder()
+                                        .userId(assignee.getId())
+                                        .userName(assignee.getName())
+                                        .userSurname(assignee.getSurname())
+                                        .userEmail(assignee.getEmail())
+                                        .resolvedCount(resolvedCount)
+                                        .unResolvedCount(unResolvedCount)
+                                        .successRate(Math.round(successRate * 100.0) / 100.0) // 2 decimal
+                                        .averageResolutionTime(averageResolutionTime)
+                                        .build();
+
+                        stats.add(dto);
+                }
+
+                // Çözülen ticket sayısına göre sırala ve ilk 5'i al
+                return stats.stream()
+                                .sorted((a, b) -> b.getResolvedCount().compareTo(a.getResolvedCount()))
+                                .limit(5)
+                                .collect(Collectors.toList());
         }
 }
