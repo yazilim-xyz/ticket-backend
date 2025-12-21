@@ -79,6 +79,9 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/user/**").hasRole("USER")
 
+                        // Kullanıcı listesi - kimlik doğrulaması gerekli
+                        .requestMatchers("/api/users").authenticated()
+
                         // Diğer tüm endpointler → JWT zorunlu
                         .anyRequest().authenticated())
 

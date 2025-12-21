@@ -10,7 +10,8 @@ import java.time.LocalDateTime;
 public class AdminUserResponseDto {
     private Long id;
     private String email;
-    private String fullName;
+    private String name;
+    private String surname;
     private String role;
     private boolean active;
     private String department;

@@ -67,9 +67,9 @@ public class ChatController {
                 ChatMessageResponseDto responseDto = new ChatMessageResponseDto(
                                 savedMessage.getId(),
                                 sender.getId(),
-                                sender.getFullName(),
+                                sender.getName() + " " + sender.getSurname(),
                                 receiver.getId(),
-                                receiver.getFullName(),
+                                receiver.getName() + " " + receiver.getSurname(),
                                 savedMessage.getMessage(),
                                 savedMessage.getCreatedAt());
 
@@ -94,9 +94,9 @@ public class ChatController {
                                 .map(msg -> new ChatMessageResponseDto(
                                                 msg.getId(),
                                                 msg.getSender().getId(),
-                                                msg.getSender().getFullName(),
+                                                msg.getSender().getName() + " " + msg.getSender().getSurname(),
                                                 msg.getReceiver().getId(),
-                                                msg.getReceiver().getFullName(),
+                                                msg.getReceiver().getName() + " " + msg.getReceiver().getSurname(),
                                                 msg.getMessage(),
                                                 msg.getCreatedAt()))
                                 .collect(Collectors.toList());
