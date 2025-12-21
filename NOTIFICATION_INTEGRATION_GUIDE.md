@@ -748,7 +748,7 @@ if (ticket.getCreatedBy() != null &&
         ticket.getCreatedBy().getId(),
         "Yeni Yorum",
         String.format("%s ticket #%d'e yorum yaptı", 
-            author.getFullName(), ticketId),
+            author.getName() + " " + author.getSurname(), ticketId),
         NotificationType.NEW_COMMENT,
         ticketId
     );
@@ -762,7 +762,7 @@ if (ticket.getAssignedTo() != null &&
         ticket.getAssignedTo().getId(),
         "Yeni Yorum",
         String.format("%s ticket #%d'e yorum yaptı", 
-            author.getFullName(), ticketId),
+            author.getName() + " " + author.getSurname(), ticketId),
         NotificationType.NEW_COMMENT,
         ticketId
     );

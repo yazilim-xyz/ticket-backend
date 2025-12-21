@@ -16,7 +16,9 @@ public class AdminUserMapper {
         AdminUserResponseDto dto = new AdminUserResponseDto();
         dto.setId(user.getId());
         dto.setEmail(user.getEmail());
-        dto.setFullName(user.getFullName());
+
+        dto.setName(user.getName());
+        dto.setSurname(user.getSurname());
 
         dto.setRole(user.getRole() != null ? user.getRole().name() : null);
 
@@ -33,8 +35,9 @@ public class AdminUserMapper {
             return;
         }
 
-        if (req.getFullName() != null) {
-            user.setFullName(req.getFullName());
+        if (req.getName() != null || req.getSurname() != null) {
+            user.setName(req.getName());
+            user.setSurname(req.getSurname());
         }
 
         // department alanın yok – burayı şimdilik yorumda bırakıyoruz.

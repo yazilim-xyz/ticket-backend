@@ -14,7 +14,6 @@ import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketCommentCreateReq
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketCreateRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketStatusUpdateRequest;
 import com.yazilimxyz.enterprise_ticket_system.Repositories.TicketCommentRepository;
-import com.yazilimxyz.enterprise_ticket_system.dto.notification.NotificationDto;
 import com.yazilimxyz.enterprise_ticket_system.service.notification.NotificationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -132,7 +131,8 @@ public class TicketService {
                         notificationService.createAndSendNotification(
                                         ticket.getCreatedBy().getId(),
                                         "Yeni Yorum",
-                                        String.format("%s ticket #%d'e yorum yaptı", author.getFullName(), ticketId),
+                                        String.format("%s ticket #%d'e yorum yaptı",
+                                                        author.getName() + " " + author.getSurname(), ticketId),
                                         NotificationType.NEW_COMMENT,
                                         ticketId);
                 }
@@ -147,7 +147,8 @@ public class TicketService {
                         notificationService.createAndSendNotification(
                                         ticket.getAssignedTo().getId(),
                                         "Yeni Yorum",
-                                        String.format("%s ticket #%d'e yorum yaptı", author.getFullName(), ticketId),
+                                        String.format("%s ticket #%d'e yorum yaptı",
+                                                        author.getName() + " " + author.getSurname(), ticketId),
                                         NotificationType.NEW_COMMENT,
                                         ticketId);
                 }

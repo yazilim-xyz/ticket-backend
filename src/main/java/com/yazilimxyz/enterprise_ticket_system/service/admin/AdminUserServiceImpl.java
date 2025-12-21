@@ -53,7 +53,8 @@ public class AdminUserServiceImpl implements AdminUserService {
 
         User user = new User();
         user.setEmail(req.getEmail());
-        user.setFullName(req.getFullName());
+        user.setName(req.getName());
+        user.setSurname(req.getSurname());
 
         user.setPasswordHash(encoder.encode(req.getPassword()));
 

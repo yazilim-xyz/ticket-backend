@@ -27,8 +27,11 @@ public class AdminSeeder implements CommandLineRunner {
     @Value("${app.seed.admin.password:Admin123!}")
     private String password;
 
-    @Value("${app.seed.admin.full-name:Admin}")
-    private String fullName;
+    @Value("${app.seed.admin.name:Admin}")
+    private String name;
+
+    @Value("${app.seed.admin.surname:User}")
+    private String surname;
 
     public AdminSeeder(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
@@ -63,7 +66,8 @@ public class AdminSeeder implements CommandLineRunner {
         }, () -> {
             User u = new User();
             u.setEmail(email);
-            u.setFullName(fullName);
+            u.setName(name);
+            u.setSurname(surname);
             u.setPasswordHash(passwordEncoder.encode(password));
             u.setRole(Role.ADMIN);
             u.setActive(true);
