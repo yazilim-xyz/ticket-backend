@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketAssignRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketCommentCreateRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketCreateRequest;
+import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketResolutionStatsDTO;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketStatusUpdateRequest;
 import com.yazilimxyz.enterprise_ticket_system.entities.Ticket;
 import com.yazilimxyz.enterprise_ticket_system.entities.TicketComment;
@@ -63,5 +64,15 @@ public class TicketController {
     public ResponseEntity<List<TicketComment>> getComments(@PathVariable Long id) {
         List<TicketComment> comments = ticketService.getComments(id);
         return ResponseEntity.ok(comments);
+    }
+
+    /**
+     * Top 5 en çok ticket çözen çalışanları getir
+     * İstatistikler: çözülen sayı, çözülmeyen sayı, başarı yüzdesi, ortalama çözme süresi
+     */
+    @GetMapping("/analytics/top-resolvers")
+    public ResponseEntity<List<TicketResolutionStatsDTO>> getTopTicketResolvers() {
+        List<TicketResolutionStatsDTO> stats = ticketService.getTopTicketResolvers();
+        return ResponseEntity.ok(stats);
     }
 }
