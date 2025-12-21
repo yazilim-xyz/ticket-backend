@@ -50,17 +50,37 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
 
                         // Herkese açık endpointler
-                        .requestMatchers("/auth/register", "/auth/login", "/auth/refresh", "/public/**",
+                        .requestMatchers(
+                                "/auth/register",
+                                "/auth/login",
+                                "/auth/refresh",
+                                "/public/**",
                                 "/chat-test.html",
+                                "/notification-test.html",
                                 // WebSocket/SockJS handshake ve yardımcı endpointleri serbest bırak
-                                "/ws", "/ws/**")
-                        // TODO şu üst kısmın değişmesi lazım chat-test.html zaten productionda olmayacak. ws ws/** kısımları da herkese açık olmayacak sanırım. 
+                                "/ws",
+                                "/ws/**",
+                                // Swagger/OpenAPI endpoints
+                                "/v3/api-docs",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/swagger-resources/**",
+                                "/webjars/**",
+                                "/configuration/**",
+                                "/api-docs/**")
+                        // TODO şu üst kısmın değişmesi lazım chat-test.html zaten productionda
+                        // olmayacak. ws ws/** kısımları da herkese açık olmayacak sanırım. onun
+                        // dışındakilere de bi bak
                         .permitAll()
                         .requestMatchers("/auth/logout").authenticated()
 
                         // Rol bazlı yetkiler
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/user/**").hasRole("USER")
+
+                        // Kullanıcı listesi - kimlik doğrulaması gerekli
+                        .requestMatchers("/api/users").authenticated()
 
                         // Diğer tüm endpointler → JWT zorunlu
                         .anyRequest().authenticated())
