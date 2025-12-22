@@ -2,11 +2,10 @@ package com.yazilimxyz.enterprise_ticket_system.entities.enums;
 
 
 public enum TicketStatus {
-    OPEN,
-    WAITING,
+    OPENED,
     IN_PROGRESS,
-    RESOLVED,
-    CLOSED
+    DONE,
+    DELETED
 }
 
 // TODO enumları fronttan alırken string şeklinde alıyoruz iyi mi kötü mü karar
