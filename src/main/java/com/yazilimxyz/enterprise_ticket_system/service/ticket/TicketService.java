@@ -168,7 +168,8 @@ public class TicketService {
 
         /**
          * Top 5 en çok ticket çözen çalışanları getir
-         * Her biri için: çözülen sayı, çözülmeyen sayı, başarı yüzdesi, ortalama çözme süresi
+         * Her biri için: çözülen sayı, çözülmeyen sayı, başarı yüzdesi, ortalama çözme
+         * süresi
          */
         @Transactional(readOnly = true)
         public List<TicketResolutionStatsDTO> getTopTicketResolvers() {
@@ -193,7 +194,7 @@ public class TicketService {
                                         .collect(Collectors.toList());
 
                         // Çözülmeyen ticket'lar
-                        Long unResolvedCount = tickets.size() - resolvedTickets.size();
+                        Long unResolvedCount = (long) tickets.size() - resolvedTickets.size();
                         Long resolvedCount = (long) resolvedTickets.size();
 
                         // Başarı yüzdesi
