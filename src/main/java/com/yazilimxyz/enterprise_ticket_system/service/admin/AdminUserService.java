@@ -1,10 +1,13 @@
 package com.yazilimxyz.enterprise_ticket_system.service.admin;
 
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.AdminTicketResponseDto;
 import com.yazilimxyz.enterprise_ticket_system.dto.admin.AdminUserCreateRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.admin.AdminUserResponseDto;
 import com.yazilimxyz.enterprise_ticket_system.dto.admin.AdminUserUpdateRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.admin.ChangeUserRoleRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.admin.ChangeUserStatusRequest;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.UserActivityDto;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.UserStatsDto;
 
 import org.springframework.data.domain.Page;
 
@@ -21,4 +24,12 @@ public interface AdminUserService {
     void changeUserStatus(Long id, ChangeUserStatusRequest request);
 
     void changeUserRole(Long id, ChangeUserRoleRequest request);
+
+    void deleteUser(Long id);
+
+    Page<AdminTicketResponseDto> getUserTickets(Long userId, int page, int size);
+
+    UserStatsDto getUserStats(Long userId);
+
+    Page<UserActivityDto> getUserActivity(Long userId, int page, int size);
 }

@@ -1,11 +1,16 @@
 package com.yazilimxyz.enterprise_ticket_system.service.admin;
 
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.AdminTicketCreateRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.admin.AdminTicketResponseDto;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.AdminTicketUpdateRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.admin.TicketAssignRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.admin.TicketFilterRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.admin.TicketStatusUpdateRequest;
 import com.yazilimxyz.enterprise_ticket_system.entities.Ticket;
 import com.yazilimxyz.enterprise_ticket_system.entities.User;
+import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketCategory;
+import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketPriority;
+import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketStatus;
 import com.yazilimxyz.enterprise_ticket_system.exception.BadRequestException;
 import com.yazilimxyz.enterprise_ticket_system.exception.NotFoundException;
 import com.yazilimxyz.enterprise_ticket_system.mapper.AdminTicketMapper;
@@ -32,9 +37,19 @@ public class AdminTicketServiceImpl implements AdminTicketService {
 
     @Override
     public Page<AdminTicketResponseDto> getTickets(TicketFilterRequest f) {
-        // Şimdilik filtre uygulamıyoruz, sadece pagination:
-        Page<Ticket> page = ticketRepo.findAll(
-                PageRequest.of(f.getPage(), f.getSize(), Sort.by("id").descending()));
+        Pageable pageable = PageRequest.of(f.getPage(), f.getSize(), Sort.by("id").descending());
+        Page<Ticket> page;
+
+        if (f.getOwnerId() != null && f.getAssignedToId() != null) {
+            page = ticketRepo.findByCreatedByIdOrAssignedToId(f.getOwnerId(), f.getAssignedToId(), pageable);
+        } else if (f.getOwnerId() != null) {
+            page = ticketRepo.findByCreatedById(f.getOwnerId(), pageable);
+        } else if (f.getAssignedToId() != null) {
+            page = ticketRepo.findByAssignedToId(f.getAssignedToId(), pageable);
+        } else {
+            page = ticketRepo.findAll(pageable);
+        }
+
         return page.map(mapper::toDto);
     }
 
@@ -43,6 +58,68 @@ public class AdminTicketServiceImpl implements AdminTicketService {
         Ticket t = ticketRepo.findById(id)
                 .orElseThrow(() -> new NotFoundException("Ticket not found with id: " + id));
         return mapper.toDto(t);
+    }
+
+    @Override
+    public AdminTicketResponseDto createTicket(AdminTicketCreateRequest r) {
+        if (r.getTitle() == null || r.getTitle().isBlank()) {
+            throw new BadRequestException("Title is required");
+        }
+        if (r.getDescription() == null || r.getDescription().isBlank()) {
+            throw new BadRequestException("Description is required");
+        }
+
+        User createdBy = null;
+        if (r.getCreatedByUserId() != null) {
+            createdBy = userRepo.findById(r.getCreatedByUserId())
+                    .orElseThrow(() -> new NotFoundException("User not found with id: " + r.getCreatedByUserId()));
+        }
+
+        User assignedTo = null;
+        if (r.getAssignedToUserId() != null) {
+            assignedTo = userRepo.findById(r.getAssignedToUserId())
+                    .orElseThrow(() -> new NotFoundException("User not found with id: " + r.getAssignedToUserId()));
+        }
+
+        Ticket t = new Ticket();
+        t.setTitle(r.getTitle());
+        t.setDescription(r.getDescription());
+        t.setPriority(r.getPriority() != null ? r.getPriority() : TicketPriority.MEDIUM);
+        t.setCategory(r.getCategory() != null ? r.getCategory() : TicketCategory.OTHER);
+        t.setStatus(TicketStatus.OPEN);
+        t.setCreatedBy(createdBy);
+        t.setAssignedTo(assignedTo);
+        t.setDueDate(r.getDueDate());
+        t.setCreatedAt(OffsetDateTime.now(ZoneOffset.UTC));
+        t.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
+
+        return mapper.toDto(ticketRepo.save(t));
+    }
+
+    @Override
+    public AdminTicketResponseDto updateTicket(Long id, AdminTicketUpdateRequest r) {
+        Ticket t = ticketRepo.findById(id)
+                .orElseThrow(() -> new NotFoundException("Ticket not found with id: " + id));
+
+        if (r.getTitle() == null || r.getTitle().isBlank()) {
+            throw new BadRequestException("Title is required");
+        }
+        if (r.getDescription() == null || r.getDescription().isBlank()) {
+            throw new BadRequestException("Description is required");
+        }
+
+        t.setTitle(r.getTitle());
+        t.setDescription(r.getDescription());
+        if (r.getPriority() != null) {
+            t.setPriority(r.getPriority());
+        }
+        if (r.getCategory() != null) {
+            t.setCategory(r.getCategory());
+        }
+        t.setDueDate(r.getDueDate());
+        t.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
+
+        return mapper.toDto(ticketRepo.save(t));
     }
 
     @Override
@@ -79,6 +156,26 @@ public class AdminTicketServiceImpl implements AdminTicketService {
             t.setCreatedBy(admin);
         }
 
+        t.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
+        ticketRepo.save(t);
+    }
+
+    @Override
+    public void deleteTicket(Long id) {
+        Ticket t = ticketRepo.findById(id)
+                .orElseThrow(() -> new NotFoundException("Ticket not found with id: " + id));
+
+        t.setIsDeleted(true);
+        t.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
+        ticketRepo.save(t);
+    }
+
+    @Override
+    public void restoreTicket(Long id) {
+        Ticket t = ticketRepo.findById(id)
+                .orElseThrow(() -> new NotFoundException("Ticket not found with id: " + id));
+
+        t.setIsDeleted(false);
         t.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
         ticketRepo.save(t);
     }

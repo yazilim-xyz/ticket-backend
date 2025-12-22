@@ -5,6 +5,9 @@ import com.yazilimxyz.enterprise_ticket_system.dto.admin.AdminUserResponseDto;
 import com.yazilimxyz.enterprise_ticket_system.dto.admin.AdminUserUpdateRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.admin.ChangeUserRoleRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.admin.ChangeUserStatusRequest;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.AdminTicketResponseDto;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.UserActivityDto;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.UserStatsDto;
 import com.yazilimxyz.enterprise_ticket_system.service.admin.AdminUserService;
 
 import lombok.RequiredArgsConstructor;
@@ -52,5 +55,31 @@ public class AdminUserController {
     @PatchMapping("/{id}/role")
     public void changeRole(@PathVariable Long id, @RequestBody ChangeUserRoleRequest req) {
         service.changeUserRole(id, req);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteUser(@PathVariable Long id) {
+        service.deleteUser(id);
+    }
+
+    @GetMapping("/{id}/tickets")
+    public Page<AdminTicketResponseDto> getUserTickets(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return service.getUserTickets(id, page, size);
+    }
+
+    @GetMapping("/{id}/stats")
+    public UserStatsDto getUserStats(@PathVariable Long id) {
+        return service.getUserStats(id);
+    }
+
+    @GetMapping("/{id}/activity")
+    public Page<UserActivityDto> getUserActivity(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return service.getUserActivity(id, page, size);
     }
 }
