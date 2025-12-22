@@ -1,6 +1,8 @@
 package com.yazilimxyz.enterprise_ticket_system.controller.admin;
 
 import com.yazilimxyz.enterprise_ticket_system.dto.admin.AdminTicketResponseDto;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.AdminTicketCreateRequest;
+import com.yazilimxyz.enterprise_ticket_system.dto.admin.AdminTicketUpdateRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.admin.TicketAssignRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.admin.TicketFilterRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.admin.TicketStatusUpdateRequest;
@@ -36,6 +38,18 @@ public class AdminTicketController {
         return service.getTicket(id);
     }
 
+    @PostMapping
+    public AdminTicketResponseDto createTicket(@RequestBody AdminTicketCreateRequest req) {
+        return service.createTicket(req);
+    }
+
+    @PutMapping("/{id}")
+    public AdminTicketResponseDto updateTicket(
+            @PathVariable Long id,
+            @RequestBody AdminTicketUpdateRequest req) {
+        return service.updateTicket(id, req);
+    }
+
     @PatchMapping("/{id}/status")
     public void updateStatus(@PathVariable Long id, @RequestBody TicketStatusUpdateRequest req) {
         service.updateTicketStatus(id, req);
@@ -44,5 +58,15 @@ public class AdminTicketController {
     @PatchMapping("/{id}/assign")
     public void assignTicket(@PathVariable Long id, @RequestBody TicketAssignRequest req) {
         service.assignTicket(id, req);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteTicket(@PathVariable Long id) {
+        service.deleteTicket(id);
+    }
+
+    @PostMapping("/{id}/restore")
+    public void restoreTicket(@PathVariable Long id) {
+        service.restoreTicket(id);
     }
 }
