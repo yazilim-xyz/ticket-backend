@@ -4,12 +4,11 @@ import com.yazilimxyz.enterprise_ticket_system.dto.user.ChangePasswordDTO;
 import com.yazilimxyz.enterprise_ticket_system.dto.user.UpdateProfileDTO;
 import com.yazilimxyz.enterprise_ticket_system.dto.user.UpdateProfileResponseDTO;
 import com.yazilimxyz.enterprise_ticket_system.dto.user.UserListItemDto;
-import com.yazilimxyz.enterprise_ticket_system.entities.User;
 import com.yazilimxyz.enterprise_ticket_system.service.user.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,9 +33,10 @@ public class UserController {
      */
     @PatchMapping("/profile")
     public ResponseEntity<UpdateProfileResponseDTO> updateProfile(
-            @AuthenticationPrincipal User user,
+            Authentication authentication,
             @Valid @RequestBody UpdateProfileDTO dto) {
-        UpdateProfileResponseDTO response = userService.updateProfile(user.getId(), dto);
+        Long userId = Long.parseLong(authentication.getName());
+        UpdateProfileResponseDTO response = userService.updateProfile(userId, dto);
         return ResponseEntity.ok(response);
     }
 
@@ -45,9 +45,10 @@ public class UserController {
      */
     @PostMapping("/change-password")
     public ResponseEntity<Void> changePassword(
-            @AuthenticationPrincipal User user,
+            Authentication authentication,
             @Valid @RequestBody ChangePasswordDTO dto) {
-        userService.changePassword(user.getId(), dto);
+        Long userId = Long.parseLong(authentication.getName());
+        userService.changePassword(userId, dto);
         return ResponseEntity.noContent().build();
     }
 }
