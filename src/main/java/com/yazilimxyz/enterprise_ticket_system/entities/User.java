@@ -87,3 +87,5 @@ public class User {
     @OneToMany(mappedBy = "receiver", fetch = FetchType.LAZY)
     private List<InternalChat> receivedMessages;
 }
+
+// TODO profil fotosu için gdrive linki tutan bir sütun eklenebilir

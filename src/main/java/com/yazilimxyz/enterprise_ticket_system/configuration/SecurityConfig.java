@@ -82,6 +82,9 @@ public class SecurityConfig {
                         // Kullanıcı listesi - kimlik doğrulaması gerekli
                         .requestMatchers("/api/users").authenticated()
 
+                        // Chatbot endpoint - kimlik doğrulaması gerekli
+                        .requestMatchers("/api/chatbot/**").authenticated()
+
                         // Diğer tüm endpointler → JWT zorunlu
                         .anyRequest().authenticated())
 
