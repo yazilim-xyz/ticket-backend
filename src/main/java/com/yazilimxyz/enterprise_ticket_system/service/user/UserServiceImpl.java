@@ -49,17 +49,27 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Kullanıcı bulunamadı"));
 
-        // Email değiştiriliyorsa, başka bir kullanıcı tarafından kullanılmadığını kontrol et
-        if (!user.getEmail().equals(dto.getEmail())) {
+        // Email değiştiriliyorsa, başka bir kullanıcı tarafından kullanılmadığını
+        // kontrol et
+        if (dto.getEmail() != null && !user.getEmail().equals(dto.getEmail())) {
             userRepository.findByEmail(dto.getEmail()).ifPresent(existingUser -> {
                 throw new BadRequestException("Bu email zaten kullanımda");
             });
         }
 
-        user.setName(dto.getName());
-        user.setSurname(dto.getSurname());
-        user.setEmail(dto.getEmail());
-        user.setPhoneNumber(dto.getPhoneNumber());
+        // Sadece gönderilen alanları güncelle
+        if (dto.getName() != null && !dto.getName().isBlank()) {
+            user.setName(dto.getName());
+        }
+        if (dto.getSurname() != null && !dto.getSurname().isBlank()) {
+            user.setSurname(dto.getSurname());
+        }
+        if (dto.getEmail() != null && !dto.getEmail().isBlank()) {
+            user.setEmail(dto.getEmail());
+        }
+        if (dto.getPhoneNumber() != null) {
+            user.setPhoneNumber(dto.getPhoneNumber());
+        }
         user.setUpdatedAt(LocalDateTime.now());
 
         User updatedUser = userRepository.save(user);
