@@ -56,6 +56,7 @@ public class SecurityConfig {
                                 "/auth/refresh",
                                 "/public/**",
                                 "/chat-test.html",
+                                "/notification-test.html",
                                 // WebSocket/SockJS handshake ve yardımcı endpointleri serbest bırak
                                 "/ws",
                                 "/ws/**",
@@ -77,6 +78,12 @@ public class SecurityConfig {
                         // Rol bazlı yetkiler
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/user/**").hasRole("USER")
+
+                        // Kullanıcı listesi - kimlik doğrulaması gerekli
+                        .requestMatchers("/api/users").authenticated()
+
+                        // Chatbot endpoint - kimlik doğrulaması gerekli
+                        .requestMatchers("/api/chatbot/**").authenticated()
 
                         // Diğer tüm endpointler → JWT zorunlu
                         .anyRequest().authenticated())

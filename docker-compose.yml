@@ -25,6 +25,7 @@ services:
       - APP_SEED_ADMIN_EMAIL=${APP_SEED_ADMIN_EMAIL:-admin@local}
       - APP_SEED_ADMIN_PASSWORD=${APP_SEED_ADMIN_PASSWORD:-Admin123!}
       - APP_SEED_ADMIN_FULL_NAME=${APP_SEED_ADMIN_FULL_NAME:-Admin}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
     depends_on:
       - db
     restart: unless-stopped
