@@ -1,4 +1,4 @@
-package com.yazilimxyz.enterprise_ticket_system.dto.ticket;
+package com.yazilimxyz.enterprise_ticket_system.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -6,14 +6,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Builder
+@Builder  
+  
 @NoArgsConstructor
 @AllArgsConstructor
 public class TicketStatusSummaryDto {
     private long total;
-
-    private long opened;
+    private long open;
+    private long WAITING;
     private long inProgress;
-    private long done;
-    private long deleted;
+    private long resolved;
+    private long CLOSED;
 }
