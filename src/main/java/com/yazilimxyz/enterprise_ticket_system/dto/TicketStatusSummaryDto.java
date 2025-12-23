@@ -13,8 +13,8 @@ import lombok.NoArgsConstructor;
 public class TicketStatusSummaryDto {
     private long total;
     private long open;
-    private long WAITING;
+    private long waiting;
     private long inProgress;
     private long resolved;
-    private long CLOSED;
+    private long closed;
 }
