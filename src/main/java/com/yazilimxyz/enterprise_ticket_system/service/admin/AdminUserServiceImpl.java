@@ -39,8 +39,20 @@ public class AdminUserServiceImpl implements AdminUserService {
     private final PasswordEncoder encoder;
 
     @Override
-    public Page<AdminUserResponseDto> getUsers(int page, int size) {
-        Page<User> users = userRepo.findAll(PageRequest.of(page, size, Sort.by("id").descending()));
+    public Page<AdminUserResponseDto> getUsers(int page, int size, Boolean approved, Boolean active) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<User> users;
+
+        if (approved != null && active != null) {
+            users = userRepo.findByApprovedAndActive(approved, active, pageable);
+        } else if (approved != null) {
+            users = userRepo.findByApproved(approved, pageable);
+        } else if (active != null) {
+            users = userRepo.findByActive(active, pageable);
+        } else {
+            users = userRepo.findAll(pageable);
+        }
+
         return users.map(mapper::toDto);
     }
 
@@ -73,6 +85,7 @@ public class AdminUserServiceImpl implements AdminUserService {
         Role role = req.getRole() != null ? parseRole(req.getRole()) : Role.USER;
         user.setRole(role);
         user.setActive(true);
+        user.setApproved(true); // Admin tarafından oluşturulan kullanıcılar otomatik onaylı
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
 
@@ -88,29 +101,6 @@ public class AdminUserServiceImpl implements AdminUserService {
         user.setUpdatedAt(LocalDateTime.now());
 
         return mapper.toDto(userRepo.save(user));
-    }
-
-    @Override
-    public void changeUserStatus(Long id, ChangeUserStatusRequest req) {
-        User user = userRepo.findById(id)
-                .orElseThrow(() -> new NotFoundException("User not found with id: " + id));
-
-        if (req.getStatus() == null) {
-            throw new BadRequestException("Status is required");
-        }
-
-        String status = req.getStatus().trim().toUpperCase();
-        boolean activate;
-        if ("ACTIVE".equals(status)) {
-            activate = true;
-        } else if ("DISABLED".equals(status)) {
-            activate = false;
-        } else {
-            throw new BadRequestException("Unknown status: " + req.getStatus());
-        }
-        user.setActive(activate);
-        user.setUpdatedAt(LocalDateTime.now());
-        userRepo.save(user);
     }
 
     @Override
@@ -187,8 +177,7 @@ public class AdminUserServiceImpl implements AdminUserService {
                 log.getTicket() != null ? log.getTicket().getId() : null,
                 log.getActionType(),
                 log.getActionDetails(),
-                log.getCreatedAt()
-        ));
+                log.getCreatedAt()));
     }
 
     private Role parseRole(String roleValue) {
@@ -200,5 +189,33 @@ public class AdminUserServiceImpl implements AdminUserService {
         } catch (IllegalArgumentException ex) {
             throw new BadRequestException("Unknown role: " + roleValue);
         }
+    }
+
+    @Override
+    public void updateUserActive(Long userId, Boolean active) {
+        if (active == null) {
+            throw new BadRequestException("Active status is required");
+        }
+
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
+
+        user.setActive(active);
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepo.save(user);
+    }
+
+    @Override
+    public void updateUserApproval(Long userId, Boolean approved) {
+        if (approved == null) {
+            throw new BadRequestException("Approval status is required");
+        }
+
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
+
+        user.setApproved(approved);
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepo.save(user);
     }
 }

@@ -62,6 +62,9 @@ public class User {
     @Column(name = "is_active", nullable = false)
     private boolean active = true; // account status flag (disable/login block)
 
+    @Column(name = "is_approved", nullable = false)
+    private boolean approved = false; // admin approval flag for new registrations
+
     // Ticket/chat relationships
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private UserPreference preference;

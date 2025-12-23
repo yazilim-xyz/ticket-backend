@@ -14,6 +14,7 @@ public class AdminUserResponseDto {
     private String surname;
     private String role;
     private boolean active;
+    private boolean approved;
     private String department;
     private LocalDateTime createdAt;
     private LocalDateTime lastLoginAt;

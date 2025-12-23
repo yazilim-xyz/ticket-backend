@@ -65,6 +65,12 @@ public class AdminSeeder implements CommandLineRunner {
                 userRepository.save(existing);
                 log.info("[AdminSeeder] Reactivated admin account {}", email);
             }
+            if (!existing.isApproved()) {
+                existing.setApproved(true);
+                existing.setUpdatedAt(LocalDateTime.now());
+                userRepository.save(existing);
+                log.info("[AdminSeeder] Approved admin account {}", email);
+            }
         }, () -> {
             User u = new User();
             u.setEmail(email);
@@ -73,6 +79,7 @@ public class AdminSeeder implements CommandLineRunner {
             u.setPasswordHash(passwordEncoder.encode(password));
             u.setRole(Role.ADMIN);
             u.setActive(true);
+            u.setApproved(true);
             u.setCreatedAt(LocalDateTime.now());
             u.setUpdatedAt(LocalDateTime.now());
 

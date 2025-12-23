@@ -61,6 +61,7 @@ public class AuthServiceImpl implements AuthService {
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
         user.setActive(true);
+        user.setApproved(false); // Requires admin approval
 
         // 3) Save
         User saved = userRepository.save(user);
@@ -89,6 +90,11 @@ public class AuthServiceImpl implements AuthService {
         // 2) Block if disabled
         if (!user.isActive()) {
             throw new ForbiddenException("Account disabled");
+        }
+
+        // 2.5) Check if approved by admin
+        if (!user.isApproved()) {
+            throw new ForbiddenException("Account pending admin approval");
         }
 
         // 3) Verify password

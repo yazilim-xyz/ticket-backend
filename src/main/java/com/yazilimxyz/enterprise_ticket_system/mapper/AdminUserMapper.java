@@ -23,6 +23,7 @@ public class AdminUserMapper {
         dto.setRole(user.getRole() != null ? user.getRole().name() : null);
 
         dto.setActive(user.isActive());
+        dto.setApproved(user.isApproved());
         dto.setDepartment(null);
         dto.setCreatedAt(user.getCreatedAt());
         dto.setLastLoginAt(null);
