@@ -1,59 +1,116 @@
 package com.yazilimxyz.enterprise_ticket_system.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.yazilimxyz.enterprise_ticket_system.entities.Ticket;
 import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketStatus;
+
 import java.time.OffsetDateTime;
 import java.util.List;
-
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import java.util.Optional;
 
 @Repository
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
+    // ==================== BASIC COUNTS ====================
+    
+    // Count total tickets assigned to user (all time)
     long countByAssignedToId(Long assignedToId);
 
+    // Count tickets by status for a user (all time)
     long countByAssignedToIdAndStatus(Long assignedToId, TicketStatus status);
     
-    // Kullanıcıya atanan ticketları filtrelerle getir
+    // ==================== BASIC FINDS ====================
+    
+    // Find all tickets assigned to user
+    List<Ticket> findByAssignedToId(Long assignedToId);
+    
+    // Find tickets by status
+    List<Ticket> findByAssignedToIdAndStatus(Long assignedToId, TicketStatus status);
+    
+    // Find latest ticket by user (for latest ticket info)
+    Optional<Ticket> findTopByAssignedToIdOrderByCreatedAtDesc(Long assignedToId);
+    
+    // ==================== DATE RANGE COUNTS ====================
+    
+    // Count tickets INSIDE date range (total)
+    @Query("SELECT COUNT(t) FROM Ticket t WHERE t.assignedTo.id = :userId " +
+           "AND t.isDeleted = false " +
+           "AND (:startDate IS NULL OR t.createdAt >= :startDate) " +
+           "AND (:endDate IS NULL OR t.createdAt <= :endDate)")
+    long countByAssignedToIdAndCreatedAtBetween(@Param("userId") Long userId,
+                                                 @Param("startDate") OffsetDateTime startDate,
+                                                 @Param("endDate") OffsetDateTime endDate);
+
+    // Count by status INSIDE date range
+    @Query("SELECT COUNT(t) FROM Ticket t WHERE t.assignedTo.id = :userId " +
+           "AND t.status = :status " +
+           "AND t.isDeleted = false " +
+           "AND (:startDate IS NULL OR t.createdAt >= :startDate) " +
+           "AND (:endDate IS NULL OR t.createdAt <= :endDate)")
+    long countByAssignedToIdAndStatusAndDateRange(@Param("userId") Long userId,
+                                                   @Param("status") TicketStatus status,
+                                                   @Param("startDate") OffsetDateTime startDate,
+                                                   @Param("endDate") OffsetDateTime endDate);
+    
+    // Find tickets INSIDE date range with status
+    @Query("SELECT t FROM Ticket t WHERE t.assignedTo.id = :userId " +
+           "AND t.status = :status " +
+           "AND t.isDeleted = false " +
+           "AND (:startDate IS NULL OR t.createdAt >= :startDate) " +
+           "AND (:endDate IS NULL OR t.createdAt <= :endDate) " +
+           "ORDER BY t.createdAt DESC")
+    List<Ticket> findByAssignedToIdAndStatusAndCreatedAtBetween(@Param("userId") Long userId,
+                                                                 @Param("status") TicketStatus status,
+                                                                 @Param("startDate") OffsetDateTime startDate,
+                                                                 @Param("endDate") OffsetDateTime endDate);
+    
+    // ==================== OVERDUE COUNTS ====================
+    
+    // Count tickets BEFORE start date (overdue - sadece geçmiş aylar, RESOLVED hariç)
+    @Query("SELECT COUNT(t) FROM Ticket t WHERE t.assignedTo.id = :userId " +
+           "AND t.status != 'RESOLVED' " +
+           "AND t.isDeleted = false " +
+           "AND (:startDate IS NULL OR t.createdAt < :startDate)")
+    long countOverdueTickets(@Param("userId") Long userId,
+                            @Param("startDate") OffsetDateTime startDate);
+
+    // Count tickets by status BEFORE start date (overdue by status, RESOLVED dahil edilebilir filtre ile)
+    @Query("SELECT COUNT(t) FROM Ticket t WHERE t.assignedTo.id = :userId " +
+           "AND t.status = :status " +
+           "AND t.isDeleted = false " +
+           "AND (:startDate IS NULL OR t.createdAt < :startDate)")
+    long countByStatusBeforeDate(@Param("userId") Long userId,
+                                 @Param("status") TicketStatus status,
+                                 @Param("startDate") OffsetDateTime startDate);
+    
+    // ==================== FILTERED LIST ====================
+    
+    // Find user's tickets with filters (for listing)
     @Query("SELECT t FROM Ticket t WHERE t.assignedTo.id = :userId " +
            "AND (:status IS NULL OR t.status = :status) " +
            "AND (:startDate IS NULL OR t.createdAt >= :startDate) " +
            "AND (:endDate IS NULL OR t.createdAt <= :endDate) " +
            "AND t.isDeleted = false " +
            "ORDER BY t.createdAt DESC")
-    List<Ticket> findMyTicketsFiltered(
-     @Param("userId") Long userId,
-      @Param("status") TicketStatus status,
-      @Param("startDate") OffsetDateTime startDate,
-      @Param("endDate") OffsetDateTime endDate);
+    List<Ticket> findMyTicketsFiltered(@Param("userId") Long userId,
+                                       @Param("status") TicketStatus status,
+                                       @Param("startDate") OffsetDateTime startDate,
+                                       @Param("endDate") OffsetDateTime endDate);
     
-    // Zaman aralığında oluşturulan ticketları getir
+    // Find OVERDUE tickets (before start date, RESOLVED hariç)
     @Query("SELECT t FROM Ticket t WHERE t.assignedTo.id = :userId " +
-           "AND t.createdAt >= :startDate " +
-           "AND t.createdAt <= :endDate " +
-           "AND t.isDeleted = false")
-    List<Ticket> findByAssignedToIdAndCreatedAtBetween(
-    @Param("userId") Long userId,
-   @Param("startDate") OffsetDateTime startDate,
-   @Param("endDate") OffsetDateTime endDate);
-   Ticket findTopByAssignedToIdOrderByCreatedAtDesc(Long userId);
-   
-   // Kullanıcıya atanan tüm ticketları getir
-   List<Ticket> findByAssignedToId(Long userId);
-   
-   // Status'e göre filtrelenmiş ticketlar
-   List<Ticket> findByAssignedToIdAndStatus(Long userId, TicketStatus status);
-   
-   // Status ve tarih aralığına göre filtrelenmiş ticketlar
-   List<Ticket> findByAssignedToIdAndStatusAndCreatedAtBetween(
-       Long userId, 
-       TicketStatus status, 
-       OffsetDateTime startDate, 
-       OffsetDateTime endDate
-   );
+           "AND (:status IS NULL OR t.status = :status) " +
+           "AND t.status != 'RESOLVED' " +
+           "AND (:startDate IS NULL OR t.createdAt < :startDate) " +
+           "AND t.isDeleted = false " +
+           "ORDER BY t.createdAt DESC")
+    List<Ticket> findOverdueTickets(@Param("userId") Long userId,
+                                    @Param("status") TicketStatus status,
+                                    @Param("startDate") OffsetDateTime startDate);
 
+                                    
 }
