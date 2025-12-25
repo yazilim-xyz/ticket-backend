@@ -305,7 +305,7 @@ public class TicketSeeder implements CommandLineRunner {
                 tickets.add(createTicket(
                                 "Eğitim videoları talep ediyorum",
                                 "Yeni kullanıcılar için sistem kullanım eğitim videoları hazırlanabilir mi?",
-                                TicketStatus.CANCELLED,
+                                TicketStatus.OPEN,
                                 TicketPriority.MEDIUM,
                                 TicketCategory.OTHER,
                                 getRandomUser(admins),
