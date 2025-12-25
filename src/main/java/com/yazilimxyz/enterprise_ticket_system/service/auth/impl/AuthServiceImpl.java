@@ -18,7 +18,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -58,8 +59,8 @@ public class AuthServiceImpl implements AuthService {
         user.setEmail(request.email());
         user.setPasswordHash(passwordEncoder.encode(request.password()));
         user.setRole(Role.USER); // default: USER
-        user.setCreatedAt(LocalDateTime.now());
-        user.setUpdatedAt(LocalDateTime.now());
+        user.setCreatedAt(OffsetDateTime.now(ZoneOffset.UTC));
+        user.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
         user.setActive(true);
         user.setApproved(false); // Requires admin approval
 
@@ -131,7 +132,7 @@ public class AuthServiceImpl implements AuthService {
         if (stored.isRevoked()) {
             throw new UnauthorizedException("Refresh token revoked");
         }
-        if (stored.getExpiresAt().isBefore(LocalDateTime.now())) {
+        if (stored.getExpiresAt().isBefore(OffsetDateTime.now(ZoneOffset.UTC))) {
             stored.setRevoked(true);
             refreshTokenRepository.save(stored);
             throw new UnauthorizedException("Refresh token expired");
@@ -166,7 +167,7 @@ public class AuthServiceImpl implements AuthService {
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setToken(UUID.randomUUID().toString());
         refreshToken.setUser(user);
-        refreshToken.setExpiresAt(LocalDateTime.now().plusDays(refreshTokenDays));
+        refreshToken.setExpiresAt(OffsetDateTime.now(ZoneOffset.UTC).plusDays(refreshTokenDays));
         refreshToken.setRevoked(false);
         return refreshTokenRepository.save(refreshToken);
     }
@@ -196,7 +197,7 @@ public class AuthServiceImpl implements AuthService {
     private void recordFailedAttempt(String email) {
         loginAttempts.compute(email, (key, attempt) -> {
             if (attempt == null || attempt.isWindowExpired(blockMinutes)) {
-                return new LoginAttempt(1, LocalDateTime.now());
+                return new LoginAttempt(1, OffsetDateTime.now(ZoneOffset.UTC));
             }
             return new LoginAttempt(attempt.getCount() + 1, attempt.getFirstAttemptAt());
         });
@@ -206,16 +207,16 @@ public class AuthServiceImpl implements AuthService {
         loginAttempts.remove(email);
     }
 
-    private record LoginAttempt(int count, LocalDateTime firstAttemptAt) {
+    private record LoginAttempt(int count, OffsetDateTime firstAttemptAt) {
         boolean isWindowExpired(long blockMinutes) {
-            return firstAttemptAt.plus(Duration.ofMinutes(blockMinutes)).isBefore(LocalDateTime.now());
+            return firstAttemptAt.plus(Duration.ofMinutes(blockMinutes)).isBefore(OffsetDateTime.now(ZoneOffset.UTC));
         }
 
         int getCount() {
             return count;
         }
 
-        LocalDateTime getFirstAttemptAt() {
+        OffsetDateTime getFirstAttemptAt() {
             return firstAttemptAt;
         }
     }

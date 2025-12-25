@@ -4,7 +4,8 @@ import com.yazilimxyz.enterprise_ticket_system.entities.enums.NotificationType;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 @Entity
 @Table(name = "ticket_notifications")
@@ -39,12 +40,12 @@ public class TicketNotification {
     private Boolean isRead = false;
 
     @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {
-            createdAt = LocalDateTime.now();
+            createdAt = OffsetDateTime.now(ZoneOffset.UTC);
         }
     }
 }

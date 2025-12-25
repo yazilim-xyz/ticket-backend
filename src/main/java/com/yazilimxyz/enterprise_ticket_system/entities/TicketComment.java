@@ -3,7 +3,7 @@ package com.yazilimxyz.enterprise_ticket_system.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "ticket_comments")
@@ -29,21 +29,5 @@ public class TicketComment {
     private String commentText;
 
     @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -434,9 +434,7 @@ public class TicketService {
                                                 ? comment.getUser().getName() + " " + comment.getUser().getSurname()
                                                 : null)
                                 .commentText(comment.getCommentText())
-                                .createdAt(comment.getCreatedAt() != null
-                                                ? comment.getCreatedAt().atOffset(ZoneOffset.UTC)
-                                                : null)
+                                .createdAt(comment.getCreatedAt())
                                 .build();
         }
 }

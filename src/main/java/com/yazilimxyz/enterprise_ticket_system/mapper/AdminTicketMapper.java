@@ -35,8 +35,8 @@ public class AdminTicketMapper {
             dto.setAssignedToEmail(assigned.getEmail());
         }
 
-        dto.setCreatedAt(t.getCreatedAt() != null ? t.getCreatedAt().toLocalDateTime() : null);
-        dto.setUpdatedAt(t.getUpdatedAt() != null ? t.getUpdatedAt().toLocalDateTime() : null);
+        dto.setCreatedAt(t.getCreatedAt());
+        dto.setUpdatedAt(t.getUpdatedAt());
 
         return dto;
     }

@@ -15,7 +15,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,22 +66,22 @@ public class TicketCommentSeeder implements CommandLineRunner {
                                         ticket1,
                                         ticket1.getCreatedBy(),
                                         "Console'da tam hata mesajı şu: 'Access to XMLHttpRequest blocked by CORS policy'",
-                                        ticket1.getCreatedAt().toLocalDateTime().plusHours(1)));
+                                        ticket1.getCreatedAt().plusHours(1)));
                         comments.add(createComment(
                                         ticket1,
                                         ticket1.getAssignedTo(),
                                         "Sorunu tespit ettim, CORS ayarlarını kontrol ediyorum.",
-                                        ticket1.getCreatedAt().toLocalDateTime().plusHours(3)));
+                                        ticket1.getCreatedAt().plusHours(3)));
                         comments.add(createComment(
                                         ticket1,
                                         ticket1.getAssignedTo(),
                                         "SecurityConfig'te allowed origins listesini güncelledim. Lütfen tekrar deneyin.",
-                                        ticket1.getCreatedAt().toLocalDateTime().plusHours(5)));
+                                        ticket1.getCreatedAt().plusHours(5)));
                         comments.add(createComment(
                                         ticket1,
                                         ticket1.getCreatedBy(),
                                         "Harika! Şimdi çalışıyor, teşekkür ederim.",
-                                        ticket1.getCreatedAt().toLocalDateTime().plusHours(6)));
+                                        ticket1.getCreatedAt().plusHours(6)));
                 }
 
                 // Ticket 2 için yorumlar (Dashboard yüklenmiyor - CLOSED)
@@ -93,27 +94,27 @@ public class TicketCommentSeeder implements CommandLineRunner {
                                         ticket2,
                                         ticket2.getAssignedTo(),
                                         "Hangi tarayıcı kullanıyorsunuz? Browser console'da hata var mı?",
-                                        ticket2.getCreatedAt().toLocalDateTime().plusHours(2)));
+                                        ticket2.getCreatedAt().plusHours(2)));
                         comments.add(createComment(
                                         ticket2,
                                         ticket2.getCreatedBy(),
                                         "Chrome kullanıyorum. Console'da '404 Not Found - /api/dashboard/stats' hatası var.",
-                                        ticket2.getCreatedAt().toLocalDateTime().plusHours(4)));
+                                        ticket2.getCreatedAt().plusHours(4)));
                         comments.add(createComment(
                                         ticket2,
                                         ticket2.getAssignedTo(),
                                         "Endpoint yolunu kontrol ettim, backend'de değişiklik olmuş. Frontend'i güncelleyeceğim.",
-                                        ticket2.getCreatedAt().toLocalDateTime().plusHours(6)));
+                                        ticket2.getCreatedAt().plusHours(6)));
                         comments.add(createComment(
                                         ticket2,
                                         ticket2.getAssignedTo(),
                                         "Düzeltme yapıldı. Cache'inizi temizleyip sayfayı yenileyin (Ctrl+Shift+R).",
-                                        ticket2.getCreatedAt().toLocalDateTime().plusDays(1)));
+                                        ticket2.getCreatedAt().plusDays(1)));
                         comments.add(createComment(
                                         ticket2,
                                         ticket2.getCreatedBy(),
                                         "Mükemmel çalışıyor, sorun çözüldü!",
-                                        ticket2.getCreatedAt().toLocalDateTime().plusDays(1).plusHours(2)));
+                                        ticket2.getCreatedAt().plusDays(1).plusHours(2)));
                 }
 
                 // Ticket 3 için yorumlar (Email bildirimleri - IN_PROGRESS)
@@ -126,17 +127,17 @@ public class TicketCommentSeeder implements CommandLineRunner {
                                         ticket3,
                                         ticket3.getAssignedTo(),
                                         "SMTP sunucu ayarlarını kontrol ediyorum. Mail servisinde bir sorun olabilir.",
-                                        ticket3.getCreatedAt().toLocalDateTime().plusHours(4)));
+                                        ticket3.getCreatedAt().plusHours(4)));
                         comments.add(createComment(
                                         ticket3,
                                         ticket3.getCreatedBy(),
                                         "Spam klasörümü de kontrol ettim ama orada da yok.",
-                                        ticket3.getCreatedAt().toLocalDateTime().plusHours(6)));
+                                        ticket3.getCreatedAt().plusHours(6)));
                         comments.add(createComment(
                                         ticket3,
                                         ticket3.getAssignedTo(),
                                         "Test mail gönderiyorum, lütfen mail kutunuzu kontrol edin.",
-                                        ticket3.getCreatedAt().toLocalDateTime().plusDays(1)));
+                                        ticket3.getCreatedAt().plusDays(1)));
                 }
 
                 // Dark mode feature request için yorumlar
@@ -149,18 +150,18 @@ public class TicketCommentSeeder implements CommandLineRunner {
                                         darkModeTicket,
                                         darkModeTicket.getAssignedTo(),
                                         "Harika öneri! Dark mode'u frontend roadmap'e ekledim. Tailwind CSS kullanarak implemente edeceğiz.",
-                                        darkModeTicket.getCreatedAt().toLocalDateTime().plusDays(2)));
+                                        darkModeTicket.getCreatedAt().plusDays(2)));
                         comments.add(createComment(
                                         darkModeTicket,
                                         users.stream().filter(u -> u.getEmail().contains("zeynep")).findFirst()
                                                         .orElse(null),
                                         "Dark mode için tasarım hazır. Theme switcher component'i üzerinde çalışıyorum.",
-                                        darkModeTicket.getCreatedAt().toLocalDateTime().plusDays(5)));
+                                        darkModeTicket.getCreatedAt().plusDays(5)));
                         comments.add(createComment(
                                         darkModeTicket,
                                         darkModeTicket.getCreatedBy(),
                                         "Harika! Çok sabırsızlanıyorum, ne zaman yayına alınır?",
-                                        darkModeTicket.getCreatedAt().toLocalDateTime().plusDays(6)));
+                                        darkModeTicket.getCreatedAt().plusDays(6)));
                 }
 
                 // Dosya ekleme feature için yorumlar
@@ -174,12 +175,12 @@ public class TicketCommentSeeder implements CommandLineRunner {
                                         users.stream().filter(u -> u.getEmail().contains("ahmet.yilmaz")).findFirst()
                                                         .orElse(null),
                                         "Çok önemli bir özellik. Backend'de MultipartFile desteği ekleyeceğiz. S3 veya local storage kullanılabilir.",
-                                        fileUploadTicket.getCreatedAt().toLocalDateTime().plusDays(1)));
+                                        fileUploadTicket.getCreatedAt().plusDays(1)));
                         comments.add(createComment(
                                         fileUploadTicket,
                                         fileUploadTicket.getCreatedBy(),
                                         "Dosya boyutu limiti ne kadar olacak? PDF, PNG, JPG formatları yeterli.",
-                                        fileUploadTicket.getCreatedAt().toLocalDateTime().plusDays(2)));
+                                        fileUploadTicket.getCreatedAt().plusDays(2)));
                 }
 
                 // Şifre değiştirme support için yorumlar
@@ -192,12 +193,12 @@ public class TicketCommentSeeder implements CommandLineRunner {
                                         passwordTicket,
                                         passwordTicket.getAssignedTo(),
                                         "Sağ üst köşedeki profil ikonuna tıklayın -> Settings -> Security sekmesi altında bulabilirsiniz.",
-                                        passwordTicket.getCreatedAt().toLocalDateTime().plusMinutes(30)));
+                                        passwordTicket.getCreatedAt().plusMinutes(30)));
                         comments.add(createComment(
                                         passwordTicket,
                                         passwordTicket.getCreatedBy(),
                                         "Buldum, çok teşekkürler! Belki daha görünür bir yere konulabilir.",
-                                        passwordTicket.getCreatedAt().toLocalDateTime().plusHours(1)));
+                                        passwordTicket.getCreatedAt().plusHours(1)));
                 }
 
                 // WebSocket bağlantı sorunu için yorumlar
@@ -210,17 +211,17 @@ public class TicketCommentSeeder implements CommandLineRunner {
                                         wsTicket,
                                         wsTicket.getAssignedTo(),
                                         "WebSocket timeout ayarlarını kontrol ediyorum. Hangi ağda bu sorunu yaşıyorsunuz? (Ofis/Ev/Mobil)",
-                                        wsTicket.getCreatedAt().toLocalDateTime().plusHours(1)));
+                                        wsTicket.getCreatedAt().plusHours(1)));
                         comments.add(createComment(
                                         wsTicket,
                                         wsTicket.getCreatedBy(),
                                         "Ofis network'ünde. Ev internet'imde sorun yok. Firewall ile ilgili olabilir mi?",
-                                        wsTicket.getCreatedAt().toLocalDateTime().plusHours(2)));
+                                        wsTicket.getCreatedAt().plusHours(2)));
                         comments.add(createComment(
                                         wsTicket,
                                         wsTicket.getAssignedTo(),
                                         "Büyük ihtimalle proxy veya firewall engelliyor. IT ekibiyle konuşacağım.",
-                                        wsTicket.getCreatedAt().toLocalDateTime().plusHours(3)));
+                                        wsTicket.getCreatedAt().plusHours(3)));
                 }
 
                 // Chatbot yanıt vermiyor için yorumlar
@@ -233,12 +234,12 @@ public class TicketCommentSeeder implements CommandLineRunner {
                                         chatbotTicket,
                                         chatbotTicket.getAssignedTo(),
                                         "CRITICAL olarak işaretlendi. Hemen bakıyorum. API key'i kontrol ediyorum.",
-                                        chatbotTicket.getCreatedAt().toLocalDateTime().plusMinutes(15)));
+                                        chatbotTicket.getCreatedAt().plusMinutes(15)));
                         comments.add(createComment(
                                         chatbotTicket,
                                         chatbotTicket.getCreatedBy(),
                                         "Console'da 'timeout after 30000ms' hatası görüyorum.",
-                                        chatbotTicket.getCreatedAt().toLocalDateTime().plusMinutes(30)));
+                                        chatbotTicket.getCreatedAt().plusMinutes(30)));
                 }
 
                 commentRepository.saveAll(comments);
@@ -263,7 +264,7 @@ public class TicketCommentSeeder implements CommandLineRunner {
                                 activityLogs.size());
         }
 
-        private TicketComment createComment(Ticket ticket, User user, String text, LocalDateTime createdAt) {
+        private TicketComment createComment(Ticket ticket, User user, String text, OffsetDateTime createdAt) {
                 TicketComment comment = new TicketComment();
                 comment.setTicket(ticket);
                 comment.setUser(user);
@@ -273,7 +274,7 @@ public class TicketCommentSeeder implements CommandLineRunner {
         }
 
         private TicketActivityLog createActivityLog(Ticket ticket, User user, String actionType,
-                        String actionDetails, LocalDateTime createdAt) {
+                        String actionDetails, OffsetDateTime createdAt) {
                 TicketActivityLog log = new TicketActivityLog();
                 log.setTicket(ticket);
                 log.setUser(user);

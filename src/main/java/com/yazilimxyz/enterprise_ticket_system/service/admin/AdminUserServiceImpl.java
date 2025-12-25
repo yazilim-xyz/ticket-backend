@@ -25,7 +25,8 @@ import org.springframework.data.domain.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 @Service
 @RequiredArgsConstructor
@@ -86,8 +87,8 @@ public class AdminUserServiceImpl implements AdminUserService {
         user.setRole(role);
         user.setActive(true);
         user.setApproved(true); // Admin tarafından oluşturulan kullanıcılar otomatik onaylı
-        user.setCreatedAt(LocalDateTime.now());
-        user.setUpdatedAt(LocalDateTime.now());
+        user.setCreatedAt(OffsetDateTime.now(ZoneOffset.UTC));
+        user.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
 
         return mapper.toDto(userRepo.save(user));
     }
@@ -98,7 +99,7 @@ public class AdminUserServiceImpl implements AdminUserService {
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + id));
 
         mapper.updateFromRequest(req, user);
-        user.setUpdatedAt(LocalDateTime.now());
+        user.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
 
         return mapper.toDto(userRepo.save(user));
     }
@@ -109,7 +110,7 @@ public class AdminUserServiceImpl implements AdminUserService {
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + id));
 
         user.setRole(parseRole(req.getRole()));
-        user.setUpdatedAt(LocalDateTime.now());
+        user.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
         userRepo.save(user);
     }
 
@@ -120,7 +121,7 @@ public class AdminUserServiceImpl implements AdminUserService {
 
         // Soft delete: hesabı devre dışı bırak
         user.setActive(false);
-        user.setUpdatedAt(LocalDateTime.now());
+        user.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
         userRepo.save(user);
     }
 
@@ -199,7 +200,7 @@ public class AdminUserServiceImpl implements AdminUserService {
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
 
         user.setActive(active);
-        user.setUpdatedAt(LocalDateTime.now());
+        user.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
         userRepo.save(user);
     }
 
@@ -213,7 +214,7 @@ public class AdminUserServiceImpl implements AdminUserService {
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
 
         user.setApproved(approved);
-        user.setUpdatedAt(LocalDateTime.now());
+        user.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
         userRepo.save(user);
     }
 }

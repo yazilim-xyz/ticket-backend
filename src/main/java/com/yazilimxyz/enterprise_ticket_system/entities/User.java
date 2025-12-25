@@ -1,6 +1,6 @@
 package com.yazilimxyz.enterprise_ticket_system.entities;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
@@ -54,10 +54,10 @@ public class User {
     private Role role;
 
     @Column(name = "created_at")
-    private LocalDateTime createdAt; // user creation time
+    private OffsetDateTime createdAt; // user creation time
 
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt; // last update time
+    private OffsetDateTime updatedAt; // last update time
 
     @Column(name = "is_active", nullable = false)
     private boolean active = true; // account status flag (disable/login block)

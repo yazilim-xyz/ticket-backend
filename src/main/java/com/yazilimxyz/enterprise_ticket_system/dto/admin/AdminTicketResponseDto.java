@@ -1,7 +1,7 @@
 package com.yazilimxyz.enterprise_ticket_system.dto.admin;
 
 import lombok.*;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketPriority;
 import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketStatus;
@@ -20,6 +20,6 @@ public class AdminTicketResponseDto {
     private String ownerEmail;
     private Long assignedToId;
     private String assignedToEmail;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private OffsetDateTime createdAt;
+    private OffsetDateTime updatedAt;
 }

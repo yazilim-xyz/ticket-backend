@@ -11,7 +11,8 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -54,7 +55,7 @@ public class NotificationService {
                 notification.setMessage(message);
                 notification.setType(type);
                 notification.setIsRead(false);
-                notification.setCreatedAt(LocalDateTime.now());
+                notification.setCreatedAt(OffsetDateTime.now(ZoneOffset.UTC));
 
                 TicketNotification saved = notificationRepository.save(notification);
 

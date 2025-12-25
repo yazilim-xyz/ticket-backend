@@ -1,5 +1,7 @@
 package com.yazilimxyz.enterprise_ticket_system.controller.ticket;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -100,10 +102,10 @@ public class TicketController {
             @RequestParam(required = false) OffsetDateTime endDate) {
         // Default to last 180 days if not provided
         if (startDate == null) {
-            startDate = OffsetDateTime.now().minusDays(180);
+            startDate = OffsetDateTime.now(ZoneOffset.UTC).minusDays(180);
         }
         if (endDate == null) {
-            endDate = OffsetDateTime.now();
+            endDate = OffsetDateTime.now(ZoneOffset.UTC);
         }
         return ResponseEntity.ok(ticketService.getMyTicketStatistics(startDate, endDate));
     }

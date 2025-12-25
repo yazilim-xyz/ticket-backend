@@ -2,6 +2,7 @@ package com.yazilimxyz.enterprise_ticket_system.controller.chat;
 
 import java.security.Principal;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Comparator;
 import java.util.List;
 
@@ -58,7 +59,7 @@ public class ChatController {
                 chatMessage.setSender(sender);
                 chatMessage.setReceiver(receiver);
                 chatMessage.setMessage(messageDto.message());
-                chatMessage.setCreatedAt(OffsetDateTime.now());
+                chatMessage.setCreatedAt(OffsetDateTime.now(ZoneOffset.UTC));
 
                 // Save to database
                 InternalChat savedMessage = messageRepository.save(chatMessage);

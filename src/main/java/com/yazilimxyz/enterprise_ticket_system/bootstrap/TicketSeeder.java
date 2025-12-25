@@ -17,7 +17,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -364,7 +363,7 @@ public class TicketSeeder implements CommandLineRunner {
                                         "TICKET_CREATED",
                                         String.format("Ticket created: %s [%s/%s]", ticket.getTitle(),
                                                         ticket.getPriority(), ticket.getCategory()),
-                                        ticket.getCreatedAt().toLocalDateTime()));
+                                        ticket.getCreatedAt()));
 
                         // Atama yapıldıysa
                         if (ticket.getAssignedTo() != null) {
@@ -375,7 +374,7 @@ public class TicketSeeder implements CommandLineRunner {
                                                 String.format("Ticket assigned to %s %s",
                                                                 ticket.getAssignedTo().getName(),
                                                                 ticket.getAssignedTo().getSurname()),
-                                                ticket.getCreatedAt().toLocalDateTime().plusMinutes(30)));
+                                                ticket.getCreatedAt().plusMinutes(30)));
                         }
 
                         // Status değişiklikleri
@@ -386,7 +385,7 @@ public class TicketSeeder implements CommandLineRunner {
                                                                 : ticket.getCreatedBy(),
                                                 "STATUS_CHANGED",
                                                 String.format("Status changed to %s", ticket.getStatus()),
-                                                ticket.getUpdatedAt().toLocalDateTime()));
+                                                ticket.getUpdatedAt()));
                         }
 
                         // Resolution eklendiyse
@@ -397,7 +396,7 @@ public class TicketSeeder implements CommandLineRunner {
                                                                 : ticket.getCreatedBy(),
                                                 "RESOLUTION_ADDED",
                                                 "Resolution summary added",
-                                                ticket.getUpdatedAt().toLocalDateTime().plusMinutes(5)));
+                                                ticket.getUpdatedAt().plusMinutes(5)));
                         }
                 }
 
@@ -433,7 +432,7 @@ public class TicketSeeder implements CommandLineRunner {
         }
 
         private TicketActivityLog createActivityLog(Ticket ticket, User user, String actionType,
-                        String actionDetails, LocalDateTime createdAt) {
+                        String actionDetails, OffsetDateTime createdAt) {
                 TicketActivityLog log = new TicketActivityLog();
                 log.setTicket(ticket);
                 log.setUser(user);

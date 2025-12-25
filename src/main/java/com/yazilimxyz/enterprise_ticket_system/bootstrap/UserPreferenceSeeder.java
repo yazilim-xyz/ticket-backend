@@ -11,7 +11,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +47,7 @@ public class UserPreferenceSeeder implements CommandLineRunner {
         }
 
         List<UserPreference> preferences = new ArrayList<>();
-        LocalDateTime now = LocalDateTime.now();
+        OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
 
         String[] languages = { "tr", "en", "tr", "en", "tr" }; // Türkçe ve İngilizce karışık
         String[] themes = { "light", "dark", "light", "dark", "light" }; // Light ve Dark karışık

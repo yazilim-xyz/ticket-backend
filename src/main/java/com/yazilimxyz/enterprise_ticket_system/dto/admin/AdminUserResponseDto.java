@@ -1,7 +1,7 @@
 package com.yazilimxyz.enterprise_ticket_system.dto.admin;
 
 import lombok.*;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Data
 @Builder
@@ -16,6 +16,6 @@ public class AdminUserResponseDto {
     private boolean active;
     private boolean approved;
     private String department;
-    private LocalDateTime createdAt;
-    private LocalDateTime lastLoginAt;
+    private OffsetDateTime createdAt;
+    private OffsetDateTime lastLoginAt;
 }

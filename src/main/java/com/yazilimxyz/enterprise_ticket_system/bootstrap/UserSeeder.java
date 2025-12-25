@@ -11,7 +11,8 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,7 +41,7 @@ public class UserSeeder implements CommandLineRunner {
                 }
 
                 List<User> users = new ArrayList<>();
-                LocalDateTime now = LocalDateTime.now();
+                OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
 
                 // Admin Kullanıcılar (Ticket oluşturur, user'lara atar)
                 users.add(createUser(
@@ -111,7 +112,7 @@ public class UserSeeder implements CommandLineRunner {
         }
 
         private User createUser(String name, String surname, String email, String phone,
-                        Role role, LocalDateTime createdAt, boolean approved) {
+                        Role role, OffsetDateTime createdAt, boolean approved) {
                 User user = new User();
                 user.setName(name);
                 user.setSurname(surname);
