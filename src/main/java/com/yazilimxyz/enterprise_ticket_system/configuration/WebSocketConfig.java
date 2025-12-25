@@ -62,6 +62,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
             public Message<?> preSend(Message<?> message, MessageChannel channel) {
                 StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
+                // Eğer accessor null ise mesajı olduğu gibi geçir
+                if (accessor == null) {
+                    return message;
+                }
+
                 // Eğer komut CONNECT ise (Bağlanıyorsa)
                 if (StompCommand.CONNECT.equals(accessor.getCommand())) {
                     // Header'dan "Authorization" değerini al

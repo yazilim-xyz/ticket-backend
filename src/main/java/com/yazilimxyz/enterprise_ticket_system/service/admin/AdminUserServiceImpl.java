@@ -5,7 +5,6 @@ import com.yazilimxyz.enterprise_ticket_system.dto.admin.AdminUserCreateRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.admin.AdminUserResponseDto;
 import com.yazilimxyz.enterprise_ticket_system.dto.admin.AdminUserUpdateRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.admin.ChangeUserRoleRequest;
-import com.yazilimxyz.enterprise_ticket_system.dto.admin.ChangeUserStatusRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.admin.UserActivityDto;
 import com.yazilimxyz.enterprise_ticket_system.dto.admin.UserStatsDto;
 import com.yazilimxyz.enterprise_ticket_system.entities.Role;
@@ -128,7 +127,7 @@ public class AdminUserServiceImpl implements AdminUserService {
     @Override
     public Page<AdminTicketResponseDto> getUserTickets(Long userId, int page, int size) {
         // kullanıcı var mı kontrolü
-        userRepo.findById(userId)
+        User user = userRepo.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
 
         Page<Ticket> tickets = ticketRepo.findByCreatedByIdOrAssignedToId(
@@ -138,7 +137,7 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     @Override
     public UserStatsDto getUserStats(Long userId) {
-        userRepo.findById(userId)
+        User user = userRepo.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
 
         long createdCount = ticketRepo.countByCreatedById(userId);
@@ -165,7 +164,7 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     @Override
     public Page<UserActivityDto> getUserActivity(Long userId, int page, int size) {
-        userRepo.findById(userId)
+        User user = userRepo.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
 
         Page<TicketActivityLog> logs = activityRepo.findByUserId(
