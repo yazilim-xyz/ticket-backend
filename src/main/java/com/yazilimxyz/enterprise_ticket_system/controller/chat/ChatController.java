@@ -1,7 +1,7 @@
 package com.yazilimxyz.enterprise_ticket_system.controller.chat;
 
 import java.security.Principal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Comparator;
 import java.util.List;
 
@@ -58,7 +58,7 @@ public class ChatController {
                 chatMessage.setSender(sender);
                 chatMessage.setReceiver(receiver);
                 chatMessage.setMessage(messageDto.message());
-                chatMessage.setCreatedAt(LocalDateTime.now());
+                chatMessage.setCreatedAt(OffsetDateTime.now());
 
                 // Save to database
                 InternalChat savedMessage = messageRepository.save(chatMessage);

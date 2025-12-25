@@ -2,7 +2,7 @@ package com.yazilimxyz.enterprise_ticket_system.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "internal_chats")
@@ -27,5 +27,5 @@ public class InternalChat {
     private String message;
 
     @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 }
