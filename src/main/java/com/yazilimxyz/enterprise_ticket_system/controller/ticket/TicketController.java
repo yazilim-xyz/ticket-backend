@@ -129,4 +129,7 @@ public class TicketController {
         List<TicketResolutionStatsDTO> stats = ticketService.getTopTicketResolvers();
         return ResponseEntity.ok(stats);
     }
+
+    // TODO ticket oluşturma falan adminin görevi sadece. buradan kaldırılması lazım
+    // TODO ticket silme, user silme vb olaylar
 }
