@@ -172,7 +172,8 @@ public class TicketService {
 
         @Transactional(readOnly = true)
         public List<TicketCommentDto> getComments(Long ticketId) {
-                List<TicketComment> comments = ticketCommentRepository.findByTicketIdOrderByCreatedAtAsc(ticketId);
+                // Optimized: fetches comments with users in single query (no N+1 problem)
+                List<TicketComment> comments = ticketCommentRepository.findByTicketIdWithUser(ticketId);
                 return comments.stream()
                                 .map(this::convertToCommentDto)
                                 .collect(Collectors.toList());
@@ -372,7 +373,8 @@ public class TicketService {
                 Ticket ticket = ticketRepository.findById(ticketId)
                                 .orElseThrow(() -> new RuntimeException("Ticket not found: " + ticketId));
 
-                List<TicketCommentDto> commentDtos = ticket.getComments().stream()
+                // Optimized: fetch comments with users in single query
+                List<TicketCommentDto> commentDtos = ticketCommentRepository.findByTicketIdWithUser(ticketId).stream()
                                 .map(this::convertToCommentDto)
                                 .collect(Collectors.toList());
 
