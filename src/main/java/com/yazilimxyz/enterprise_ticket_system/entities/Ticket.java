@@ -49,7 +49,6 @@ public class Ticket {
 
     // user kısmı
     // kullanıcıyla eslestiriyoruz.Id ler ile olusturma ve assignedleri
-    // TODO lazyden dolayı olabilir loop olarak kendi kendine sonsuza kadar ticket - user - ticket - user çekiyor bunu düzeltmek lazım
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_id")
     private User createdBy;

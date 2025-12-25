@@ -2,14 +2,16 @@ package com.yazilimxyz.enterprise_ticket_system.dto.ticket;
 
 import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketCategory;
 import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketPriority;
+import jakarta.validation.constraints.NotNull;
 
 public class TicketCreateRequest {
     private String title;
     private String description;
     private TicketPriority priority;
     private TicketCategory category;
-    private Long createdById; // şimdilik direkt userId alıyoruz // TODO bu kimin tarafından oluşturulduğu falan jwtden extract edilecek dışardan alınmayacak
-    //TODO burada assigned to id falan da alınması lazım kime atanacağını belirlemek için.
+
+    @NotNull(message = "Assigned to user ID is required")
+    private Long assignedToId;
 
     // Getter & Setter
 
@@ -45,11 +47,11 @@ public class TicketCreateRequest {
         this.category = category;
     }
 
-    public Long getCreatedById() {
-        return createdById;
+    public Long getAssignedToId() {
+        return assignedToId;
     }
 
-    public void setCreatedById(Long createdById) {
-        this.createdById = createdById;
+    public void setAssignedToId(Long assignedToId) {
+        this.assignedToId = assignedToId;
     }
 }

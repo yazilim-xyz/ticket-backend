@@ -52,8 +52,10 @@ public class TicketService {
 
         @Transactional
         public TicketDto createTicket(TicketCreateRequest request) {
-                User createdBy = userRepository.findById(request.getCreatedById())
-                                .orElseThrow(() -> new RuntimeException("User not found: " + request.getCreatedById()));
+                // JWT'den kullanıcıyı al
+                Long currentUserId = getCurrentUserId();
+                User createdBy = userRepository.findById(currentUserId)
+                                .orElseThrow(() -> new RuntimeException("User not found: " + currentUserId));
 
                 Ticket ticket = new Ticket();
                 ticket.setTitle(request.getTitle());
@@ -63,7 +65,22 @@ public class TicketService {
                 ticket.setStatus(TicketStatus.OPEN);
                 ticket.setCreatedBy(createdBy);
 
+                // Atanacak kullanıcıyı kontrol et ve ata
+                User assignedTo = userRepository.findById(request.getAssignedToId())
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Assigned user not found: " + request.getAssignedToId()));
+                ticket.setAssignedTo(assignedTo);
+
                 Ticket saved = ticketRepository.save(ticket);
+
+                // Bildirim gönder
+                notificationService.createAndSendNotification(
+                                assignedTo.getId(),
+                                "Yeni Ticket Atandı",
+                                String.format("Ticket #%d size atandı: %s", ticket.getId(), ticket.getTitle()),
+                                NotificationType.TICKET_ASSIGNED,
+                                ticket.getId());
+
                 return convertToDto(saved);
         }
 
