@@ -76,6 +76,19 @@ public class TicketController {
     }
 
     /**
+     * Giriş yapan kullanıcıya atanan ticketları getir
+     * GET /api/tickets/my-assigned
+     * Optional params: status, startDate, endDate
+     */
+    @GetMapping("/my-assigned")
+    public ResponseEntity<List<TicketSimpledto>> getMyAssignedTickets(
+            @RequestParam(required = false) TicketStatus status,
+            @RequestParam(required = false) OffsetDateTime startDate,
+            @RequestParam(required = false) OffsetDateTime endDate) {
+        return ResponseEntity.ok(ticketService.getMyTickets(status, startDate, endDate));
+    }
+
+    /**
      * 1. Get ticket statistics for current user (last 30 days by default)
      * GET /api/tickets/statistics
      * Optional params: startDate, endDate (ISO format)
