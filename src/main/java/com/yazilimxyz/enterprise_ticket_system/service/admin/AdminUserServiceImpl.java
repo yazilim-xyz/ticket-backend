@@ -147,7 +147,6 @@ public class AdminUserServiceImpl implements AdminUserService {
         long inProgressCount = countByStatus(userId, TicketStatus.IN_PROGRESS);
         long resolvedCount = countByStatus(userId, TicketStatus.RESOLVED);
         long closedCount = countByStatus(userId, TicketStatus.CLOSED);
-        long cancelledCount = countByStatus(userId, TicketStatus.CANCELLED);
 
         return new UserStatsDto(
                 createdCount,
@@ -155,8 +154,7 @@ public class AdminUserServiceImpl implements AdminUserService {
                 openCount,
                 inProgressCount,
                 resolvedCount,
-                closedCount,
-                cancelledCount);
+                closedCount);
     }
 
     private long countByStatus(Long userId, TicketStatus status) {

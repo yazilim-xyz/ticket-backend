@@ -14,5 +14,4 @@ public class UserStatsDto {
     private long inProgressCount;
     private long resolvedCount;
     private long closedCount;
-    private long cancelledCount;
 }

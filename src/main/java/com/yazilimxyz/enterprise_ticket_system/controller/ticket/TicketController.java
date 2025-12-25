@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.yazilimxyz.enterprise_ticket_system.dto.TicketStatisticsdto;
-import com.yazilimxyz.enterprise_ticket_system.dto.TicketStatusSummaryDto;
 import com.yazilimxyz.enterprise_ticket_system.dto.TicketSimpledto;
 import com.yazilimxyz.enterprise_ticket_system.dto.TicketDetaildto;
 
@@ -26,9 +25,9 @@ import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketStatus;
 import com.yazilimxyz.enterprise_ticket_system.service.ticket.TicketService;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 
 import org.springframework.web.bind.annotation.RequestParam;
+
 @RestController
 @RequestMapping("/api/tickets")
 public class TicketController {
@@ -73,23 +72,28 @@ public class TicketController {
     public ResponseEntity<List<TicketComment>> getComments(@PathVariable Long id) {
         List<TicketComment> comments = ticketService.getComments(id);
         return ResponseEntity.ok(comments);
-    
-    }   
-    @GetMapping("/statistics/summary")
-    public ResponseEntity<TicketStatusSummaryDto> getMyTicketSummary() {
-        return ResponseEntity.ok(ticketService.getMyTicketStatusSummary());
+
     }
+
     /**
-     * 1. Get ticket statistics for current user
+     * 1. Get ticket statistics for current user (last 30 days by default)
      * GET /api/tickets/statistics
+     * Optional params: startDate, endDate (ISO format)
      */
     @GetMapping("/statistics")
-    public ResponseEntity<TicketStatisticsdto> getMyTicketStatistics() {
-        return ResponseEntity.ok(ticketService.getMyTicketStatistics());
+    public ResponseEntity<TicketStatisticsdto> getMyTicketStatistics(
+            @RequestParam(required = false) OffsetDateTime startDate,
+            @RequestParam(required = false) OffsetDateTime endDate) {
+        // Default to last 180 days if not provided
+        if (startDate == null) {
+            startDate = OffsetDateTime.now().minusDays(180);
+        }
+        if (endDate == null) {
+            endDate = OffsetDateTime.now();
+        }
+        return ResponseEntity.ok(ticketService.getMyTicketStatistics(startDate, endDate));
     }
-    
-  
-    
+
     /**
      * 4. Get ticket detail with all information
      * GET /api/tickets/{id}/detail
@@ -101,7 +105,8 @@ public class TicketController {
 
     /**
      * Top 5 en çok ticket çözen çalışanları getir
-     * İstatistikler: çözülen sayı, çözülmeyen sayı, başarı yüzdesi, ortalama çözme süresi
+     * İstatistikler: çözülen sayı, çözülmeyen sayı, başarı yüzdesi, ortalama çözme
+     * süresi
      */
     @GetMapping("/analytics/top-resolvers")
     public ResponseEntity<List<TicketResolutionStatsDTO>> getTopTicketResolvers() {
