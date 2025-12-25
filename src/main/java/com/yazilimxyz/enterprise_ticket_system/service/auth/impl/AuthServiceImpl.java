@@ -53,13 +53,15 @@ public class AuthServiceImpl implements AuthService {
 
         // 2) Create user
         User user = new User();
-        user.setFullName(request.fullName());
+        user.setName(request.name());
+        user.setSurname(request.surname());
         user.setEmail(request.email());
         user.setPasswordHash(passwordEncoder.encode(request.password()));
         user.setRole(Role.USER); // default: USER
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
         user.setActive(true);
+        user.setApproved(false); // Requires admin approval
 
         // 3) Save
         User saved = userRepository.save(user);
@@ -67,10 +69,10 @@ public class AuthServiceImpl implements AuthService {
         // 4) DTO
         return new RegisterResponseDTO(
                 saved.getId(),
-                saved.getFullName(),
+                saved.getName(),
+                saved.getSurname(),
                 saved.getEmail(),
-                saved.getRole()
-        );
+                saved.getRole());
     }
 
     @Override
@@ -90,6 +92,11 @@ public class AuthServiceImpl implements AuthService {
             throw new ForbiddenException("Account disabled");
         }
 
+        // 2.5) Check if approved by admin
+        if (!user.isApproved()) {
+            throw new ForbiddenException("Account pending admin approval");
+        }
+
         // 3) Verify password
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             recordFailedAttempt(request.email());
@@ -102,19 +109,18 @@ public class AuthServiceImpl implements AuthService {
         String token = jwtUtil.generateToken(
                 user.getId(),
                 user.getEmail(),
-                user.getRole().name()
-        );
+                user.getRole().name());
         RefreshToken refreshToken = createRefreshToken(user);
 
         // 5) DTO
         return new LoginResponseDTO(
                 user.getId(),
-                user.getFullName(),
+                user.getName(),
+                user.getSurname(),
                 user.getEmail(),
                 user.getRole(),
                 token,
-                refreshToken.getToken()
-        );
+                refreshToken.getToken());
     }
 
     @Override
@@ -144,17 +150,16 @@ public class AuthServiceImpl implements AuthService {
         String newAccess = jwtUtil.generateToken(
                 user.getId(),
                 user.getEmail(),
-                user.getRole().name()
-        );
+                user.getRole().name());
 
         return new LoginResponseDTO(
                 user.getId(),
-                user.getFullName(),
+                user.getName(),
+                user.getSurname(),
                 user.getEmail(),
                 user.getRole(),
                 newAccess,
-                newRefresh.getToken()
-        );
+                newRefresh.getToken());
     }
 
     private RefreshToken createRefreshToken(User user) {

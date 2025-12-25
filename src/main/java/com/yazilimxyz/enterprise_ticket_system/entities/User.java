@@ -32,11 +32,17 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "full_name", nullable = false, length = 100)
-    private String fullName;
+    @Column(name = "name", nullable = false, length = 50)
+    private String name;
+
+    @Column(name = "surname", nullable = false, length = 50)
+    private String surname;
 
     @Column(nullable = false, unique = true, length = 100)
     private String email;
+
+    @Column(name = "phone_number", length = 20)
+    private String phoneNumber;
 
     // BCrypt hashed password
     @Column(name = "password_hash", nullable = false, length = 255)
@@ -55,6 +61,9 @@ public class User {
 
     @Column(name = "is_active", nullable = false)
     private boolean active = true; // account status flag (disable/login block)
+
+    @Column(name = "is_approved", nullable = false)
+    private boolean approved = false; // admin approval flag for new registrations
 
     // Ticket/chat relationships
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
@@ -81,3 +90,5 @@ public class User {
     @OneToMany(mappedBy = "receiver", fetch = FetchType.LAZY)
     private List<InternalChat> receivedMessages;
 }
+
+// TODO profil fotosu için gdrive linki tutan bir sütun eklenebilir

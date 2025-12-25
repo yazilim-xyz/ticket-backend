@@ -18,6 +18,7 @@ import com.yazilimxyz.enterprise_ticket_system.dto.TicketDetaildto;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketAssignRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketCommentCreateRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketCreateRequest;
+import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketResolutionStatsDTO;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketStatusUpdateRequest;
 import com.yazilimxyz.enterprise_ticket_system.entities.Ticket;
 import com.yazilimxyz.enterprise_ticket_system.entities.TicketComment;
@@ -96,5 +97,15 @@ public class TicketController {
     @GetMapping("/{id}/detail")
     public ResponseEntity<TicketDetaildto> getTicketDetail(@PathVariable Long id) {
         return ResponseEntity.ok(ticketService.getTicketDetail(id));
+    }
+
+    /**
+     * Top 5 en çok ticket çözen çalışanları getir
+     * İstatistikler: çözülen sayı, çözülmeyen sayı, başarı yüzdesi, ortalama çözme süresi
+     */
+    @GetMapping("/analytics/top-resolvers")
+    public ResponseEntity<List<TicketResolutionStatsDTO>> getTopTicketResolvers() {
+        List<TicketResolutionStatsDTO> stats = ticketService.getTopTicketResolvers();
+        return ResponseEntity.ok(stats);
     }
 }
