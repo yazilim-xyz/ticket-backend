@@ -35,8 +35,8 @@ public class JwtUtil {
         Date now = new Date();
         Date exp = new Date(now.getTime() + expirationMs);
 
-        // TODO burada neden random uuid kullanılıyor?? userId kullanılması daha
-        // mantıklı değil mi? userIdyi guid kullanacak şekilde ayarlayıp onu kullanırız.
+        // TODO burada neden random uuid kullanılıyor ve userid idye değil de subjecte
+        // veriliyor???
         // o halde her yerde id için subjecti çekiyorduk onların da değiştirilmesi lazım
         // id nin kullanılması lazım.
         return Jwts.builder()

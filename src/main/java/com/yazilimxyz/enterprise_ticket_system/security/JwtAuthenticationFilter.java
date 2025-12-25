@@ -50,7 +50,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
                 // TODO buralardaki runtime exceptionlar yerine custom exception atılabilir
-                // runtime exception biraz riskli mi?? acaba
+                // runtime exception biraz riskli mi??
                 User user = userRepository.findById(userId)
                         .orElseThrow(() -> new RuntimeException("User not found"));
 
