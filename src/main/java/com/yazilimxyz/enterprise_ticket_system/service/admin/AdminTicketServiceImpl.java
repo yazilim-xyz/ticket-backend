@@ -68,10 +68,12 @@ public class AdminTicketServiceImpl implements AdminTicketService {
             throw new BadRequestException("Description is required");
         }
 
+        // JWT'den oluşturan kullanıcıyı al
+        Long currentUserId = currentUserId();
         User createdBy = null;
-        if (r.getCreatedByUserId() != null) {
-            createdBy = userRepo.findById(r.getCreatedByUserId())
-                    .orElseThrow(() -> new NotFoundException("User not found with id: " + r.getCreatedByUserId()));
+        if (currentUserId != null) {
+            createdBy = userRepo.findById(currentUserId)
+                    .orElseThrow(() -> new NotFoundException("User not found with id: " + currentUserId));
         }
 
         User assignedTo = null;

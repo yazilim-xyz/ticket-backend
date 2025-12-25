@@ -148,8 +148,10 @@ public class TicketService {
                 Ticket ticket = ticketRepository.findById(ticketId)
                                 .orElseThrow(() -> new RuntimeException("Ticket not found: " + ticketId));
 
-                User author = userRepository.findById(request.getAuthorId())
-                                .orElseThrow(() -> new RuntimeException("User not found: " + request.getAuthorId()));
+                // JWT'den kullanıcıyı al
+                Long currentUserId = getCurrentUserId();
+                User author = userRepository.findById(currentUserId)
+                                .orElseThrow(() -> new RuntimeException("User not found: " + currentUserId));
 
                 TicketComment comment = new TicketComment();
                 comment.setTicket(ticket);

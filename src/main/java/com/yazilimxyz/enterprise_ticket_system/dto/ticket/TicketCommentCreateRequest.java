@@ -2,16 +2,7 @@ package com.yazilimxyz.enterprise_ticket_system.dto.ticket;
 
 public class TicketCommentCreateRequest {
 
-    private Long authorId;
     private String content;
-
-    public Long getAuthorId() {
-        return authorId;
-    }
-
-    public void setAuthorId(Long authorId) {
-        this.authorId = authorId;
-    }
 
     public String getContent() {
         return content;

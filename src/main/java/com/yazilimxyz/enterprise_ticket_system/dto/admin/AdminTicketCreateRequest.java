@@ -12,7 +12,6 @@ public class AdminTicketCreateRequest {
     private String description;
     private TicketPriority priority;
     private TicketCategory category;
-    private Long createdByUserId;
     private Long assignedToUserId;
     private OffsetDateTime dueDate;
 }
