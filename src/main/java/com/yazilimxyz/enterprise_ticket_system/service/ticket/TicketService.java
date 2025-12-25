@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -258,6 +259,14 @@ public class TicketService {
         public TicketStatisticsdto getMyTicketStatistics(OffsetDateTime startDate, OffsetDateTime endDate) {
                 Long userId = getCurrentUserId();
 
+                // Eğer tarihler null ise, tüm zamanları kapsayacak şekilde ayarla
+                if (startDate == null) {
+                        startDate = OffsetDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+                }
+                if (endDate == null) {
+                        endDate = OffsetDateTime.now(ZoneOffset.UTC).plusYears(10);
+                }
+
                 // Tarih aralığındaki ticketlar (İÇERİDE)
                 long total = ticketRepository.countByAssignedToIdAndCreatedAtBetween(userId, startDate, endDate);
                 long open = ticketRepository.countByAssignedToIdAndStatusAndDateRange(userId, TicketStatus.OPEN,
@@ -290,22 +299,20 @@ public class TicketService {
                 Long userId = getCurrentUserId();
                 List<Ticket> tickets;
 
-                // HER ÜÇÜ DE DOLU
-                if (status != null && startDate != null && endDate != null) {
-                        tickets = ticketRepository.findByAssignedToIdAndStatusAndCreatedAtBetween(
-                                        userId, status, startDate, endDate);
-                }
+                // Tarihleri normalize et
+                OffsetDateTime effectiveStartDate = startDate != null ? startDate
+                                : OffsetDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+                OffsetDateTime effectiveEndDate = endDate != null ? endDate
+                                : OffsetDateTime.now(ZoneOffset.UTC).plusYears(10);
+
                 // SADECE STATUS VAR
-                else if (status != null && (startDate == null || endDate == null)) {
-                        tickets = ticketRepository.findByAssignedToIdAndStatus(userId, status);
+                if (status != null) {
+                        tickets = ticketRepository.findByAssignedToIdAndStatusAndCreatedAtBetween(
+                                        userId, status, effectiveStartDate, effectiveEndDate);
                 }
-                // SADECE TARİH ARALIĞI VAR
-                else if (status == null && startDate != null && endDate != null) {
-                        tickets = ticketRepository.findMyTicketsFiltered(userId, null, startDate, endDate);
-                }
-                // HİÇBİRİ YOK
+                // STATUS YOK, TÜM TİCKETLAR TARİH ARALIĞINDA
                 else {
-                        tickets = ticketRepository.findByAssignedToId(userId);
+                        tickets = ticketRepository.findMyTicketsFiltered(userId, effectiveStartDate, effectiveEndDate);
                 }
 
                 return tickets.stream()
@@ -317,7 +324,19 @@ public class TicketService {
         @Transactional(readOnly = true)
         public List<TicketSimpledto> getOverdueTickets(TicketStatus status, OffsetDateTime startDate) {
                 Long userId = getCurrentUserId();
-                List<Ticket> tickets = ticketRepository.findOverdueTickets(userId, status, startDate);
+
+                // Eğer startDate null ise, bugünün tarihini kullan
+                OffsetDateTime effectiveStartDate = startDate != null ? startDate
+                                : OffsetDateTime.now(ZoneOffset.UTC);
+
+                List<Ticket> tickets = ticketRepository.findOverdueTickets(userId, effectiveStartDate);
+
+                // Eğer status filtresi varsa, burada uygula
+                if (status != null) {
+                        tickets = tickets.stream()
+                                        .filter(t -> t.getStatus() == status)
+                                        .collect(Collectors.toList());
+                }
 
                 return tickets.stream()
                                 .map(this::convertToSimpleDto)
