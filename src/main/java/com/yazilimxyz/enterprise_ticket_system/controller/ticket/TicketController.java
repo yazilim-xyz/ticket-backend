@@ -22,9 +22,11 @@ import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketCommentDto;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketCreateRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketDto;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketResolutionStatsDTO;
+import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketResolutionUpdateRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketStatusUpdateRequest;
 import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketStatus;
 import com.yazilimxyz.enterprise_ticket_system.service.ticket.TicketService;
+import jakarta.validation.Valid;
 
 import java.time.OffsetDateTime;
 
@@ -128,6 +130,18 @@ public class TicketController {
     public ResponseEntity<List<TicketResolutionStatsDTO>> getTopTicketResolvers() {
         List<TicketResolutionStatsDTO> stats = ticketService.getTopTicketResolvers();
         return ResponseEntity.ok(stats);
+    }
+
+    /**
+     * Ticket'a çözüm özeti ekle/güncelle
+     * PATCH /api/tickets/{id}/resolution
+     */
+    @PatchMapping("/{id}/resolution")
+    public ResponseEntity<TicketDto> updateResolution(
+            @PathVariable Long id,
+            @Valid @RequestBody TicketResolutionUpdateRequest request) {
+        TicketDto updated = ticketService.updateResolution(id, request.getResolutionSummary());
+        return ResponseEntity.ok(updated);
     }
 
     // TODO ticket oluşturma falan adminin görevi sadece. buradan kaldırılması lazım

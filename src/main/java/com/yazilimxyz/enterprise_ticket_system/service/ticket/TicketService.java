@@ -456,4 +456,27 @@ public class TicketService {
                                 .createdAt(comment.getCreatedAt())
                                 .build();
         }
+
+        @Transactional
+        public TicketDto updateResolution(Long ticketId, String resolutionSummary) {
+                Ticket ticket = ticketRepository.findById(ticketId)
+                                .orElseThrow(() -> new RuntimeException("Ticket not found: " + ticketId));
+
+                ticket.setResolutionSummary(resolutionSummary);
+                ticket.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
+
+                Ticket saved = ticketRepository.save(ticket);
+
+                // Ticket sahibine bildirim gönder
+                if (ticket.getCreatedBy() != null) {
+                        notificationService.createAndSendNotification(
+                                        ticket.getCreatedBy().getId(),
+                                        "Ticket Çözüm Eklendi",
+                                        String.format("Ticket #%d için çözüm özeti eklendi", ticket.getId()),
+                                        NotificationType.TICKET_STATUS_CHANGED,
+                                        ticket.getId());
+                }
+
+                return convertToDto(saved);
+        }
 }
