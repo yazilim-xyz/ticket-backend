@@ -10,6 +10,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.yazilimxyz.enterprise_ticket_system.dto.TicketStatisticsdto;
+import com.yazilimxyz.enterprise_ticket_system.dto.TicketStatusSummaryDto;
+import com.yazilimxyz.enterprise_ticket_system.dto.TicketSimpledto;
+import com.yazilimxyz.enterprise_ticket_system.dto.TicketDetaildto;
 
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketAssignRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketCommentCreateRequest;
@@ -18,8 +22,13 @@ import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketResolutionStatsD
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketStatusUpdateRequest;
 import com.yazilimxyz.enterprise_ticket_system.entities.Ticket;
 import com.yazilimxyz.enterprise_ticket_system.entities.TicketComment;
+import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketStatus;
 import com.yazilimxyz.enterprise_ticket_system.service.ticket.TicketService;
 
+import java.time.OffsetDateTime;
+import java.util.List;
+
+import org.springframework.web.bind.annotation.RequestParam;
 @RestController
 @RequestMapping("/api/tickets")
 public class TicketController {
@@ -64,6 +73,30 @@ public class TicketController {
     public ResponseEntity<List<TicketComment>> getComments(@PathVariable Long id) {
         List<TicketComment> comments = ticketService.getComments(id);
         return ResponseEntity.ok(comments);
+    
+    }   
+    @GetMapping("/statistics/summary")
+    public ResponseEntity<TicketStatusSummaryDto> getMyTicketSummary() {
+        return ResponseEntity.ok(ticketService.getMyTicketStatusSummary());
+    }
+    /**
+     * 1. Get ticket statistics for current user
+     * GET /api/tickets/statistics
+     */
+    @GetMapping("/statistics")
+    public ResponseEntity<TicketStatisticsdto> getMyTicketStatistics() {
+        return ResponseEntity.ok(ticketService.getMyTicketStatistics());
+    }
+    
+  
+    
+    /**
+     * 4. Get ticket detail with all information
+     * GET /api/tickets/{id}/detail
+     */
+    @GetMapping("/{id}/detail")
+    public ResponseEntity<TicketDetaildto> getTicketDetail(@PathVariable Long id) {
+        return ResponseEntity.ok(ticketService.getTicketDetail(id));
     }
 
     /**
