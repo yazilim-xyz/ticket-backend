@@ -11,7 +11,9 @@ import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketCategory;
 import com.yazilimxyz.enterprise_ticket_system.Repositories.TicketRepository;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketAssignRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketCommentCreateRequest;
+import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketCommentDto;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketCreateRequest;
+import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketDto;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketResolutionStatsDTO;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketStatusUpdateRequest;
 import com.yazilimxyz.enterprise_ticket_system.Repositories.TicketCommentRepository;
@@ -49,7 +51,7 @@ public class TicketService {
         }
 
         @Transactional
-        public Ticket createTicket(TicketCreateRequest request) {
+        public TicketDto createTicket(TicketCreateRequest request) {
                 User createdBy = userRepository.findById(request.getCreatedById())
                                 .orElseThrow(() -> new RuntimeException("User not found: " + request.getCreatedById()));
 
@@ -61,11 +63,12 @@ public class TicketService {
                 ticket.setStatus(TicketStatus.OPEN);
                 ticket.setCreatedBy(createdBy);
 
-                return ticketRepository.save(ticket);
+                Ticket saved = ticketRepository.save(ticket);
+                return convertToDto(saved);
         }
 
         @Transactional
-        public Ticket assignTicket(Long ticketId, TicketAssignRequest request) {
+        public TicketDto assignTicket(Long ticketId, TicketAssignRequest request) {
                 Ticket ticket = ticketRepository.findById(ticketId)
                                 .orElseThrow(() -> new RuntimeException("Ticket not found: " + ticketId));
 
@@ -84,11 +87,11 @@ public class TicketService {
                                 NotificationType.TICKET_ASSIGNED,
                                 ticket.getId());
 
-                return saved;
+                return convertToDto(saved);
         }
 
         @Transactional
-        public Ticket updateStatus(Long ticketId, TicketStatusUpdateRequest request) {
+        public TicketDto updateStatus(Long ticketId, TicketStatusUpdateRequest request) {
                 Ticket ticket = ticketRepository.findById(ticketId)
                                 .orElseThrow(() -> new RuntimeException("Ticket not found: " + ticketId));
 
@@ -120,11 +123,11 @@ public class TicketService {
                                         ticket.getId());
                 }
 
-                return saved;
+                return convertToDto(saved);
         }
 
         @Transactional
-        public TicketComment addComment(Long ticketId, TicketCommentCreateRequest request) {
+        public TicketCommentDto addComment(Long ticketId, TicketCommentCreateRequest request) {
                 Ticket ticket = ticketRepository.findById(ticketId)
                                 .orElseThrow(() -> new RuntimeException("Ticket not found: " + ticketId));
 
@@ -164,12 +167,15 @@ public class TicketService {
                                         ticketId);
                 }
 
-                return saved;
+                return convertToCommentDto(saved);
         }
 
         @Transactional(readOnly = true)
-        public List<TicketComment> getComments(Long ticketId) {
-                return ticketCommentRepository.findByTicketIdOrderByCreatedAtAsc(ticketId);
+        public List<TicketCommentDto> getComments(Long ticketId) {
+                List<TicketComment> comments = ticketCommentRepository.findByTicketIdOrderByCreatedAtAsc(ticketId);
+                return comments.stream()
+                                .map(this::convertToCommentDto)
+                                .collect(Collectors.toList());
         }
 
         /**
@@ -366,6 +372,10 @@ public class TicketService {
                 Ticket ticket = ticketRepository.findById(ticketId)
                                 .orElseThrow(() -> new RuntimeException("Ticket not found: " + ticketId));
 
+                List<TicketCommentDto> commentDtos = ticket.getComments().stream()
+                                .map(this::convertToCommentDto)
+                                .collect(Collectors.toList());
+
                 return TicketDetaildto.builder()
                                 .id(ticket.getId())
                                 .title(ticket.getTitle())
@@ -383,7 +393,48 @@ public class TicketService {
                                 .resolutionSummary(ticket.getResolutionSummary())
                                 .createdAt(ticket.getCreatedAt())
                                 .updatedAt(ticket.getUpdatedAt())
-                                .comments(ticket.getComments())
+                                .comments(commentDtos)
+                                .build();
+        }
+
+        // Helper methods for entity to DTO conversion
+        private TicketDto convertToDto(Ticket ticket) {
+                return TicketDto.builder()
+                                .id(ticket.getId())
+                                .title(ticket.getTitle())
+                                .description(ticket.getDescription())
+                                .status(ticket.getStatus())
+                                .priority(ticket.getPriority())
+                                .category(ticket.getCategory())
+                                .createdById(ticket.getCreatedBy() != null ? ticket.getCreatedBy().getId() : null)
+                                .createdByName(ticket.getCreatedBy() != null
+                                                ? ticket.getCreatedBy().getName() + " "
+                                                                + ticket.getCreatedBy().getSurname()
+                                                : null)
+                                .assignedToId(ticket.getAssignedTo() != null ? ticket.getAssignedTo().getId() : null)
+                                .assignedToName(ticket.getAssignedTo() != null
+                                                ? ticket.getAssignedTo().getName() + " "
+                                                                + ticket.getAssignedTo().getSurname()
+                                                : null)
+                                .dueDate(ticket.getDueDate())
+                                .resolutionSummary(ticket.getResolutionSummary())
+                                .createdAt(ticket.getCreatedAt())
+                                .updatedAt(ticket.getUpdatedAt())
+                                .build();
+        }
+
+        private TicketCommentDto convertToCommentDto(TicketComment comment) {
+                return TicketCommentDto.builder()
+                                .id(comment.getId())
+                                .ticketId(comment.getTicket() != null ? comment.getTicket().getId() : null)
+                                .userId(comment.getUser() != null ? comment.getUser().getId() : null)
+                                .userName(comment.getUser() != null
+                                                ? comment.getUser().getName() + " " + comment.getUser().getSurname()
+                                                : null)
+                                .commentText(comment.getCommentText())
+                                .createdAt(comment.getCreatedAt() != null
+                                                ? comment.getCreatedAt().atOffset(ZoneOffset.UTC)
+                                                : null)
                                 .build();
         }
 }

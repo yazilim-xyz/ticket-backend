@@ -16,11 +16,11 @@ import com.yazilimxyz.enterprise_ticket_system.dto.TicketDetaildto;
 
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketAssignRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketCommentCreateRequest;
+import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketCommentDto;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketCreateRequest;
+import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketDto;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketResolutionStatsDTO;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketStatusUpdateRequest;
-import com.yazilimxyz.enterprise_ticket_system.entities.Ticket;
-import com.yazilimxyz.enterprise_ticket_system.entities.TicketComment;
 import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketStatus;
 import com.yazilimxyz.enterprise_ticket_system.service.ticket.TicketService;
 
@@ -40,37 +40,38 @@ public class TicketController {
 
     // olusturma
     @PostMapping
-    public ResponseEntity<Ticket> createTicket(@RequestBody TicketCreateRequest request) {
-        Ticket created = ticketService.createTicket(request);
+    public ResponseEntity<TicketDto> createTicket(@RequestBody TicketCreateRequest request) {
+        TicketDto created = ticketService.createTicket(request);
         return ResponseEntity.ok(created);
     }
 
     // atama
     @PatchMapping("/{id}/assign")
-    public ResponseEntity<Ticket> assignTicket(@PathVariable Long id, @RequestBody TicketAssignRequest request) {
-        Ticket updated = ticketService.assignTicket(id, request);
+    public ResponseEntity<TicketDto> assignTicket(@PathVariable Long id, @RequestBody TicketAssignRequest request) {
+        TicketDto updated = ticketService.assignTicket(id, request);
         return ResponseEntity.ok(updated);
     }
 
     // durum degistirme
     @PatchMapping("/{id}/status")
-    public ResponseEntity<Ticket> updateStatus(@PathVariable Long id, @RequestBody TicketStatusUpdateRequest request) {
-        Ticket updated = ticketService.updateStatus(id, request);
+    public ResponseEntity<TicketDto> updateStatus(@PathVariable Long id,
+            @RequestBody TicketStatusUpdateRequest request) {
+        TicketDto updated = ticketService.updateStatus(id, request);
         return ResponseEntity.ok(updated);
     }
 
     // comment kısmı
     @PostMapping("/{id}/comments")
-    public ResponseEntity<TicketComment> addComment(@PathVariable Long id,
+    public ResponseEntity<TicketCommentDto> addComment(@PathVariable Long id,
             @RequestBody TicketCommentCreateRequest request) {
-        TicketComment comment = ticketService.addComment(id, request);
+        TicketCommentDto comment = ticketService.addComment(id, request);
         return ResponseEntity.ok(comment);
     }
 
     // yorumları gösterme
     @GetMapping("/{id}/comments")
-    public ResponseEntity<List<TicketComment>> getComments(@PathVariable Long id) {
-        List<TicketComment> comments = ticketService.getComments(id);
+    public ResponseEntity<List<TicketCommentDto>> getComments(@PathVariable Long id) {
+        List<TicketCommentDto> comments = ticketService.getComments(id);
         return ResponseEntity.ok(comments);
 
     }
