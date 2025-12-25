@@ -8,7 +8,7 @@ import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketStatus;
 import com.yazilimxyz.enterprise_ticket_system.repository.UserRepository;
 import com.yazilimxyz.enterprise_ticket_system.entities.enums.NotificationType;
 import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketCategory;
-import com.yazilimxyz.enterprise_ticket_system.repository.TicketRepository;
+import com.yazilimxyz.enterprise_ticket_system.Repositories.TicketRepository;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketAssignRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketCommentCreateRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.ticket.TicketCreateRequest;
