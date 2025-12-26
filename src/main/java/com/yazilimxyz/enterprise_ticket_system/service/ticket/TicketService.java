@@ -3,6 +3,7 @@ package com.yazilimxyz.enterprise_ticket_system.service.ticket;
 import com.yazilimxyz.enterprise_ticket_system.entities.Ticket;
 import com.yazilimxyz.enterprise_ticket_system.entities.TicketComment;
 import com.yazilimxyz.enterprise_ticket_system.entities.User;
+import com.yazilimxyz.enterprise_ticket_system.entities.Role;
 import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketPriority;
 import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketStatus;
 import com.yazilimxyz.enterprise_ticket_system.repository.UserRepository;
@@ -96,13 +97,21 @@ public class TicketService {
                 ticket.setAssignedTo(assignedTo);
                 Ticket saved = ticketRepository.save(ticket);
 
-                // Bildirim gönder
-                notificationService.createAndSendNotification(
-                                assignedTo.getId(),
-                                "Yeni Ticket Atandı",
-                                String.format("Ticket #%d size atandı: %s", ticket.getId(), ticket.getTitle()),
-                                NotificationType.TICKET_ASSIGNED,
-                                ticket.getId());
+                // Atanan kişiye bildirim gönder (atayan kişi değilse)
+                Long currentUserId = getCurrentUserId();
+                if (!assignedTo.getId().equals(currentUserId)) {
+                        notificationService.createAndSendNotification(
+                                        assignedTo.getId(),
+                                        "Yeni Ticket Atandı",
+                                        String.format("Ticket #%d size atandı: %s", ticket.getId(), ticket.getTitle()),
+                                        NotificationType.TICKET_ASSIGNED,
+                                        ticket.getId());
+                }
+
+                // Tüm adminlere bildirim gönder (işlemi yapan kişi hariç)
+                notifyAllAdmins(currentUserId, "Ticket Atandı",
+                                String.format("Ticket #%d atandı: %s", saved.getId(), saved.getTitle()),
+                                NotificationType.TICKET_ASSIGNED, saved.getId());
 
                 return convertToDto(saved);
         }
@@ -116,8 +125,11 @@ public class TicketService {
                 ticket.setStatus(request.getStatus());
                 Ticket saved = ticketRepository.save(ticket);
 
-                // Ticket sahibine bildirim gönder
-                if (ticket.getCreatedBy() != null && !oldStatus.equals(request.getStatus())) {
+                Long currentUserId = getCurrentUserId();
+
+                // Ticket sahibine bildirim gönder (değiştiren kişi değilse)
+                if (ticket.getCreatedBy() != null && !oldStatus.equals(request.getStatus()) &&
+                                !ticket.getCreatedBy().getId().equals(currentUserId)) {
                         notificationService.createAndSendNotification(
                                         ticket.getCreatedBy().getId(),
                                         "Ticket Durumu Değişti",
@@ -127,8 +139,9 @@ public class TicketService {
                                         ticket.getId());
                 }
 
-                // Atanan kişiye de bildirim gönder (eğer farklı ise)
+                // Atanan kişiye de bildirim gönder (değiştiren kişi değilse ve farklı ise)
                 if (ticket.getAssignedTo() != null &&
+                                !ticket.getAssignedTo().getId().equals(currentUserId) &&
                                 ticket.getCreatedBy() != null &&
                                 !ticket.getAssignedTo().getId().equals(ticket.getCreatedBy().getId())) {
                         notificationService.createAndSendNotification(
@@ -139,6 +152,12 @@ public class TicketService {
                                         NotificationType.TICKET_STATUS_CHANGED,
                                         ticket.getId());
                 }
+
+                // Tüm adminlere bildirim gönder (işlemi yapan kişi hariç)
+                notifyAllAdmins(currentUserId, "Ticket Durumu Değişti",
+                                String.format("Ticket #%d durumu '%s' olarak değiştirildi", saved.getId(),
+                                                request.getStatus()),
+                                NotificationType.TICKET_STATUS_CHANGED, saved.getId());
 
                 return convertToDto(saved);
         }
@@ -467,8 +486,10 @@ public class TicketService {
 
                 Ticket saved = ticketRepository.save(ticket);
 
-                // Ticket sahibine bildirim gönder
-                if (ticket.getCreatedBy() != null) {
+                Long currentUserId = getCurrentUserId();
+
+                // Ticket sahibine bildirim gönder (işlemi yapan kişi değilse)
+                if (ticket.getCreatedBy() != null && !ticket.getCreatedBy().getId().equals(currentUserId)) {
                         notificationService.createAndSendNotification(
                                         ticket.getCreatedBy().getId(),
                                         "Ticket Çözüm Eklendi",
@@ -477,6 +498,29 @@ public class TicketService {
                                         ticket.getId());
                 }
 
+                // Tüm adminlere bildirim gönder (işlemi yapan kişi hariç)
+                notifyAllAdmins(currentUserId, "Ticket Çözüm Eklendi",
+                                String.format("Ticket #%d için çözüm özeti eklendi", saved.getId()),
+                                NotificationType.TICKET_STATUS_CHANGED, saved.getId());
+
                 return convertToDto(saved);
+        }
+
+        /**
+         * Tüm adminlere bildirim gönder (işlemi yapan kişi hariç)
+         */
+        private void notifyAllAdmins(Long excludeUserId, String title, String message,
+                        NotificationType type, Long relatedEntityId) {
+                List<User> admins = userRepository.findByRole(Role.ADMIN);
+                for (User admin : admins) {
+                        if (excludeUserId == null || !admin.getId().equals(excludeUserId)) {
+                                notificationService.createAndSendNotification(
+                                                admin.getId(),
+                                                title,
+                                                message,
+                                                type,
+                                                relatedEntityId);
+                        }
+                }
         }
 }

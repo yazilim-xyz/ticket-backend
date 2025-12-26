@@ -8,6 +8,7 @@ import com.yazilimxyz.enterprise_ticket_system.dto.admin.TicketFilterRequest;
 import com.yazilimxyz.enterprise_ticket_system.dto.admin.TicketStatusUpdateRequest;
 import com.yazilimxyz.enterprise_ticket_system.entities.Ticket;
 import com.yazilimxyz.enterprise_ticket_system.entities.User;
+import com.yazilimxyz.enterprise_ticket_system.entities.Role;
 import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketCategory;
 import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketPriority;
 import com.yazilimxyz.enterprise_ticket_system.entities.enums.TicketStatus;
@@ -17,6 +18,8 @@ import com.yazilimxyz.enterprise_ticket_system.mapper.AdminTicketMapper;
 import com.yazilimxyz.enterprise_ticket_system.Repositories.TicketRepository;
 import com.yazilimxyz.enterprise_ticket_system.repository.UserRepository;
 import com.yazilimxyz.enterprise_ticket_system.security.AuthenticatedUser;
+import com.yazilimxyz.enterprise_ticket_system.service.notification.NotificationService;
+import com.yazilimxyz.enterprise_ticket_system.entities.enums.NotificationType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.security.core.Authentication;
@@ -25,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +37,7 @@ public class AdminTicketServiceImpl implements AdminTicketService {
     private final TicketRepository ticketRepo;
     private final UserRepository userRepo;
     private final AdminTicketMapper mapper;
+    private final NotificationService notificationService;
 
     @Override
     public Page<AdminTicketResponseDto> getTickets(TicketFilterRequest f) {
@@ -94,7 +99,25 @@ public class AdminTicketServiceImpl implements AdminTicketService {
         t.setCreatedAt(OffsetDateTime.now(ZoneOffset.UTC));
         t.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
 
-        return mapper.toDto(ticketRepo.save(t));
+        Ticket saved = ticketRepo.save(t);
+
+        // Atanan kişiye bildirim gönder (oluşturan kişi değilse)
+        Long actingUserId = currentUserId();
+        if (assignedTo != null && !assignedTo.getId().equals(actingUserId)) {
+            notificationService.createAndSendNotification(
+                    assignedTo.getId(),
+                    "Yeni Ticket Atandı",
+                    String.format("Ticket #%d size atandı: %s", saved.getId(), saved.getTitle()),
+                    NotificationType.TICKET_ASSIGNED,
+                    saved.getId());
+        }
+
+        // Tüm adminlere bildirim gönder (işlemi yapan admin hariç)
+        notifyAllAdmins(actingUserId, "Yeni Ticket Oluşturuldu",
+                String.format("Ticket #%d oluşturuldu: %s", saved.getId(), saved.getTitle()),
+                NotificationType.TICKET_ASSIGNED, saved.getId());
+
+        return mapper.toDto(saved);
     }
 
     @Override
@@ -120,7 +143,40 @@ public class AdminTicketServiceImpl implements AdminTicketService {
         t.setDueDate(r.getDueDate());
         t.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
 
-        return mapper.toDto(ticketRepo.save(t));
+        Ticket saved = ticketRepo.save(t);
+
+        // Bildirim gönderirken güncelleyen kişiyi hariç tut
+        Long actingUserId = currentUserId();
+
+        // Atanan kişiye bildirim gönder (güncelleyen kişi değilse)
+        if (saved.getAssignedTo() != null && !saved.getAssignedTo().getId().equals(actingUserId)) {
+            notificationService.createAndSendNotification(
+                    saved.getAssignedTo().getId(),
+                    "Ticket Güncellendi",
+                    String.format("Ticket #%d güncellendi: %s", saved.getId(), saved.getTitle()),
+                    NotificationType.TICKET_STATUS_CHANGED,
+                    saved.getId());
+        }
+
+        // Oluşturan kişiye de bildirim gönder (güncelleyen ve atanan kişi değilse)
+        if (saved.getCreatedBy() != null &&
+                !saved.getCreatedBy().getId().equals(actingUserId) &&
+                (saved.getAssignedTo() == null
+                        || !saved.getCreatedBy().getId().equals(saved.getAssignedTo().getId()))) {
+            notificationService.createAndSendNotification(
+                    saved.getCreatedBy().getId(),
+                    "Ticket Güncellendi",
+                    String.format("Ticket #%d güncellendi: %s", saved.getId(), saved.getTitle()),
+                    NotificationType.TICKET_STATUS_CHANGED,
+                    saved.getId());
+        }
+
+        // Tüm adminlere bildirim gönder (işlemi yapan admin hariç)
+        notifyAllAdmins(actingUserId, "Ticket Güncellendi",
+                String.format("Ticket #%d güncellendi: %s", saved.getId(), saved.getTitle()),
+                NotificationType.TICKET_STATUS_CHANGED, saved.getId());
+
+        return mapper.toDto(saved);
     }
 
     @Override
@@ -134,7 +190,38 @@ public class AdminTicketServiceImpl implements AdminTicketService {
 
         t.setStatus(r.getStatus());
         t.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
-        ticketRepo.save(t);
+        Ticket saved = ticketRepo.save(t);
+
+        // Bildirim gönderirken güncelleyen kişiyi hariç tut
+        Long actingUserId = currentUserId();
+
+        // Atanan kişiye bildirim gönder (güncelleyen kişi değilse)
+        if (saved.getAssignedTo() != null && !saved.getAssignedTo().getId().equals(actingUserId)) {
+            notificationService.createAndSendNotification(
+                    saved.getAssignedTo().getId(),
+                    "Ticket Durumu Değişti",
+                    String.format("Ticket #%d durumu '%s' olarak değiştirildi", saved.getId(), r.getStatus()),
+                    NotificationType.TICKET_STATUS_CHANGED,
+                    saved.getId());
+        }
+
+        // Oluşturan kişiye de bildirim gönder (güncelleyen ve atanan kişi değilse)
+        if (saved.getCreatedBy() != null &&
+                !saved.getCreatedBy().getId().equals(actingUserId) &&
+                (saved.getAssignedTo() == null
+                        || !saved.getCreatedBy().getId().equals(saved.getAssignedTo().getId()))) {
+            notificationService.createAndSendNotification(
+                    saved.getCreatedBy().getId(),
+                    "Ticket Durumu Değişti",
+                    String.format("Ticket #%d durumu '%s' olarak değiştirildi", saved.getId(), r.getStatus()),
+                    NotificationType.TICKET_STATUS_CHANGED,
+                    saved.getId());
+        }
+
+        // Tüm adminlere bildirim gönder (işlemi yapan admin hariç)
+        notifyAllAdmins(actingUserId, "Ticket Durumu Değişti",
+                String.format("Ticket #%d durumu '%s' olarak değiştirildi", saved.getId(), r.getStatus()),
+                NotificationType.TICKET_STATUS_CHANGED, saved.getId());
     }
 
     @Override
@@ -158,7 +245,22 @@ public class AdminTicketServiceImpl implements AdminTicketService {
         }
 
         t.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
-        ticketRepo.save(t);
+        Ticket saved = ticketRepo.save(t);
+
+        // Yeni atanan kişiye bildirim gönder (atayan kişi değilse)
+        if (!u.getId().equals(currentUserId)) {
+            notificationService.createAndSendNotification(
+                    u.getId(),
+                    "Yeni Ticket Atandı",
+                    String.format("Ticket #%d size atandı: %s", saved.getId(), saved.getTitle()),
+                    NotificationType.TICKET_ASSIGNED,
+                    saved.getId());
+        }
+
+        // Tüm adminlere bildirim gönder (işlemi yapan admin hariç)
+        notifyAllAdmins(currentUserId, "Ticket Atandı",
+                String.format("Ticket #%d atandı: %s", saved.getId(), saved.getTitle()),
+                NotificationType.TICKET_ASSIGNED, saved.getId());
     }
 
     @Override
@@ -196,6 +298,24 @@ public class AdminTicketServiceImpl implements AdminTicketService {
             return Long.parseLong(authentication.getName());
         } catch (NumberFormatException ex) {
             return null;
+        }
+    }
+
+    /**
+     * Tüm adminlere bildirim gönder (işlemi yapan admin hariç)
+     */
+    private void notifyAllAdmins(Long excludeUserId, String title, String message,
+            NotificationType type, Long relatedEntityId) {
+        List<User> admins = userRepo.findByRole(Role.ADMIN);
+        for (User admin : admins) {
+            if (excludeUserId == null || !admin.getId().equals(excludeUserId)) {
+                notificationService.createAndSendNotification(
+                        admin.getId(),
+                        title,
+                        message,
+                        type,
+                        relatedEntityId);
+            }
         }
     }
 }
