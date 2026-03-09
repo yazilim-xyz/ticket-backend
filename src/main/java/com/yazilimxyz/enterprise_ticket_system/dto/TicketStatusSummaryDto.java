@@ -17,4 +17,5 @@ public class TicketStatusSummaryDto {
     private long inProgress;
     private long resolved;
     private long closed;
+    
 }
